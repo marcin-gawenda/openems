@@ -100,12 +100,11 @@ public class BridgeModbusTcpImplTest {
 	}
 
 	@Test
-	public void testTriggerLogIllegalArgumentException() throws Exception {
+	public void testSkips() throws Exception {
 		final ThrowingRunnable<Exception> sleep = () -> Thread.sleep(CYCLE_TIME);
-		var port = findRandomOpenPortOnAllLocalInterfaces();
+
+		var port = TestUtils.findRandomOpenPortOnAllLocalInterfaces();
 		ModbusSlave slave = null;
-		PrintStream originalOut = System.out;
-		ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 		try {
 			/*
 			 * Open Modbus/TCP Slave
@@ -113,36 +112,41 @@ public class BridgeModbusTcpImplTest {
 			slave = ModbusSlaveFactory.createTCPSlave(port, 1);
 			var processImage = new SimpleProcessImage(UNIT_ID);
 			Register register100 = new SimpleRegister(123);
-			// This will cause an IllegalArgumentException
-			Register register101 = new SimpleRegister(Integer.MAX_VALUE);
 			processImage.addRegister(100, register100);
-			processImage.addRegister(101, register101);
 			slave.addProcessImage(UNIT_ID, processImage);
 			slave.open();
-			System.setOut(new PrintStream(outContent));
+
 			/*
 			 * Instantiate Modbus-Bridge
 			 */
 			var sut = new BridgeModbusTcpImpl();
+			var device = new MyModbusComponent(DEVICE_ID, sut, UNIT_ID);
 			var test = new ComponentTest(sut) //
+					.addComponent(device) //
+					.addReference("cycle", new DummyCycle(CYCLE_TIME)) //
 					.activate(MyConfigTcp.create() //
-							.setId("modbus0") //
+							.setId(MODBUS_ID) //
 							.setIp("127.0.0.1") //
 							.setPort(port) //
 							.setInvalidateElementsAfterReadErrors(1) //
 							.setLogVerbosity(LogVerbosity.NONE) //
+							.setIntervalBetweenAccesses(150)
 							.build());
-			test.addComponent(new MyModbusComponent("device0", sut, UNIT_ID));
-			test //
-					.next(new TestCase() //
-							.onAfterProcessImage(sleep)); //
-			assertTrue(outContent.toString().contains("IllegalArgumentException"));
 
+			test.next(new TestCase() //
+						.onAfterProcessImage(sleep) //
+						.output(REGISTER_100, 123) //
+						.output(MODBUS_COMMUNICATION_FAILED, false)); //
+			register100 = new SimpleRegister(1234);
+			processImage.addRegister(100, register100);
+			test
+				.next(new TestCase() //
+						.onAfterProcessImage(sleep) //
+						.output(REGISTER_100, 123) //
+						.output(MODBUS_COMMUNICATION_FAILED, false)); //
 		} finally {
 			if (slave != null) {
 				slave.close();
-				System.setOut(originalOut);
-				System.out.println(outContent);
 			}
 		}
 	}
