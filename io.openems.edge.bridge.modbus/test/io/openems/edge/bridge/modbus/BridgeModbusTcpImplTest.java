@@ -1,5 +1,6 @@
 package io.openems.edge.bridge.modbus;
 
+<<<<<<< HEAD
 import static io.openems.common.test.TestUtils.findRandomOpenPortOnAllLocalInterfaces;
 import static io.openems.edge.bridge.modbus.api.ModbusComponent.ChannelId.MODBUS_COMMUNICATION_FAILED;
 import static org.junit.Assert.assertTrue;
@@ -7,6 +8,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+=======
+import io.openems.edge.common.test.DummyConfigurationAdmin;
+import org.junit.Ignore;
+>>>>>>> 9d9b269fe (Reference ConfigurationAdmin instead of Cycle for cycle time reading)
 import org.junit.Test;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
@@ -27,6 +32,9 @@ import io.openems.edge.common.channel.Doc;
 import io.openems.edge.common.taskmanager.Priority;
 import io.openems.edge.common.test.AbstractComponentTest.TestCase;
 import io.openems.edge.common.test.ComponentTest;
+
+import java.util.Dictionary;
+import java.util.Hashtable;
 
 public class BridgeModbusTcpImplTest {
 
@@ -114,16 +122,20 @@ public class BridgeModbusTcpImplTest {
 			slave.addProcessImage(UNIT_ID, processImage);
 			slave.open();
 
-			int NUM_TESTS, MAX_INTERVAL;
+			var cm = new DummyConfigurationAdmin();
+			var cfg = cm.createFactoryConfiguration("Core.Cycle", null);
+			Dictionary<String, Object> properties = new Hashtable<>();
+			properties.put("cycleTime", 100);
+			cfg.update(properties);
 
 			// interval = 0, should not change original modbus behavior
-			NUM_TESTS = 1;
-			for (int i = 0; i < NUM_TESTS; i++) {
+			int numTests = 1;
+			for (int i = 0; i < numTests; i++) {
 				var sut = new BridgeModbusTcpImpl();
 				var device = new MyModbusComponent(DEVICE_ID, sut, UNIT_ID);
 				var test = new ComponentTest(sut) //
 						.addComponent(device) //
-						.addReference("cycle", new DummyCycle(CYCLE_TIME));
+						.addReference("cm", cm);
 
 				test.activate(MyConfigTcp.create() //
 						.setId(MODBUS_ID) //
@@ -153,17 +165,17 @@ public class BridgeModbusTcpImplTest {
 				// Important! Otherwise, new sut cannot connect to the slave (only 1 slave thread)
 				sut.deactivate();
 			}
-			// 0 <= interval < MAX_INTERVAL
-			NUM_TESTS = 7;
-			MAX_INTERVAL = CYCLE_TIME * 3;
-			for (int i = 0; i < NUM_TESTS; i++) {
+			// 0 <= interval < maxInterval
+			numTests = 7;
+			int maxInterval = CYCLE_TIME * 3;
+			for (int i = 0; i < numTests; i++) {
 				var sut = new BridgeModbusTcpImpl();
 				var device = new MyModbusComponent(DEVICE_ID, sut, UNIT_ID);
 				var test = new ComponentTest(sut) //
-						.addComponent(device) //
-						.addReference("cycle", new DummyCycle(CYCLE_TIME));
+						.addComponent(device)
+						.addReference("cm", cm);
 
-				int interval = MAX_INTERVAL * i / NUM_TESTS;
+				int interval = maxInterval * i / numTests;
 				int skips = (int)Math.ceil(interval * 1.0 / CYCLE_TIME) - 1;
 
 				System.out.println("Interval=" + interval + ", skips=" + skips);

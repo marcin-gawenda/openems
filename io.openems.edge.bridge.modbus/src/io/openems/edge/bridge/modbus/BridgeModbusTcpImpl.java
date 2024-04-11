@@ -1,5 +1,6 @@
 package io.openems.edge.bridge.modbus;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
@@ -9,8 +10,14 @@ import java.util.Objects;
 import io.openems.edge.bridge.modbus.api.LogVerbosity;
 import io.openems.edge.bridge.modbus.api.task.AbstractTask;
 import io.openems.edge.common.cycle.Cycle;
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 import org.osgi.service.event.propertytypes.EventTopics;
@@ -55,8 +62,10 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 	private int noSkipIdx = 0;
 	private long cycleIdx = 0;
 
+	private int coreCycleTime = 1000;
+
 	@Reference
-	private Cycle cycle;
+	protected ConfigurationAdmin cm;
 
 	public BridgeModbusTcpImpl() {
 		super(//
@@ -71,6 +80,7 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 	private void activate(ComponentContext context, ConfigTcp config) throws UnknownHostException {
 		super.activate(context, new Config(config.id(), config.alias(), config.enabled(), config.logVerbosity(),
 				config.invalidateElementsAfterReadErrors()));
+
 		this.applyConfig(config);
 	}
 
@@ -82,12 +92,13 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 		this.closeModbusConnection();
 	}
 
-	private void applyConfig(ConfigTcp config) {
+	private void applyConfig(ConfigTcp config) throws IOException {
 		this.setIpAddress(InetAddressUtils.parseOrNull(config.ip()));
 		this.port = config.port();
-		this.noSkipIdx = (int)Math.ceil(config.intervalBetweenAccesses() * 1.0 / cycle.getCycleTime());
+		this.coreCycleTime = (int) (Integer) this.cm.getConfiguration("Core.Cycle").getProperties().get("cycleTime");
+		this.noSkipIdx = (int)Math.ceil(config.intervalBetweenAccesses() * 1.0 / this.coreCycleTime);
 		this.noSkipIdx = Math.max(this.noSkipIdx, 1);
-		this.logCycle("applyConfig: cycleTime=" + cycle.getCycleTime()
+		this.logCycle("applyConfig: cycleTime=" + this.coreCycleTime
 			+ ", interval=" + config.intervalBetweenAccesses()
 			+ ", noSkipIdx=" + this.noSkipIdx);
 	}
@@ -167,11 +178,11 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 		}
 
 		if (this.isNewCycle(event)) {
-			shouldSkip = this.cycleIdx % this.noSkipIdx != 0;
-			this.logCycle("handleEvent: Cycle " + this.cycleIdx + (shouldSkip ? " will" : " won't") + " be skipped");
+			this.shouldSkip = this.cycleIdx % this.noSkipIdx != 0;
+			this.logCycle("handleEvent: Cycle " + this.cycleIdx + (this.shouldSkip ? " will" : " won't") + " be skipped");
 			this.cycleIdx++;
 		}
-		if (shouldSkip) {
+		if (this.shouldSkip) {
 			return;
 		}
 
