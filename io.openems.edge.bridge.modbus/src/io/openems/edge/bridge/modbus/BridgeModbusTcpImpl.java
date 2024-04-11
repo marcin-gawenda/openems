@@ -80,7 +80,6 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 	private void activate(ComponentContext context, ConfigTcp config) throws UnknownHostException {
 		super.activate(context, new Config(config.id(), config.alias(), config.enabled(), config.logVerbosity(),
 				config.invalidateElementsAfterReadErrors()));
-
 		this.applyConfig(config);
 	}
 
@@ -92,11 +91,16 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 		this.closeModbusConnection();
 	}
 
-	private void applyConfig(ConfigTcp config) throws IOException {
+	private void applyConfig(ConfigTcp config) {
 		this.setIpAddress(InetAddressUtils.parseOrNull(config.ip()));
 		this.port = config.port();
-		this.coreCycleTime = (int) (Integer) this.cm.getConfiguration("Core.Cycle").getProperties().get("cycleTime");
-		this.noSkipIdx = (int)Math.ceil(config.intervalBetweenAccesses() * 1.0 / this.coreCycleTime);
+        try {
+			// the default cycleTime is not persisted and won't be returned, only modified cycleTime will!
+			this.coreCycleTime = (int) (Integer) this.cm.getConfiguration("Core.Cycle").getProperties().get("cycleTime");
+        } catch (Exception e) {
+			this.coreCycleTime = 1000;
+        }
+        this.noSkipIdx = (int)Math.ceil(config.intervalBetweenAccesses() * 1.0 / this.coreCycleTime);
 		this.noSkipIdx = Math.max(this.noSkipIdx, 1);
 		this.logCycle("applyConfig: cycleTime=" + this.coreCycleTime
 			+ ", interval=" + config.intervalBetweenAccesses()
