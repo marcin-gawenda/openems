@@ -8,6 +8,7 @@ Bundle-Version: 1.0.0.${tstamp}
 	Java-WebSocket,\
 	io.openems.backend.common,\
 	io.openems.common,\
-
+	org.osgi.compendium,\
+	osgi.cmpn
 -testpath: \
 	${testpath}

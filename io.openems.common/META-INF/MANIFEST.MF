@@ -3,14 +3,26 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Common
 Bundle-SymbolicName: io.openems.common
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ClassPath: common.jar,
+ marcin/.m2/repository/org/osgi/org.osgi.service.metatype/1.4.1/org.osgi.service.metatype-1.4.1.jar,
+ marcin/.m2/repository/com/google/guava/failureaccess/1.0.3/failureaccess-1.0.3.jar,
+ marcin/.m2/repository/org/java-websocket/Java-WebSocket/1.5.2/Java-WebSocket-1.5.2.jar,
+ marcin/.m2/repository/org/osgi/org.osgi.util.promise/1.2.0/org.osgi.util.promise-1.2.0.jar,
+ marcin/ws-mag/openems/io.openems.wrapper/generated/io.openems.wrapper.opczip.jar,
+ marcin/.m2/repository/com/google/code/gson/gson/2.13.0/gson-2.13.0.jar,
+ marcin/.m2/repository/org/osgi/org.osgi.service.event/1.4.1/org.osgi.service.event-1.4.1.jar,
+ marcin/.m2/repository/org/osgi/org.osgi.service.cm/1.6.1/org.osgi.service.cm-1.6.1.jar,
+ marcin/.m2/repository/org/osgi/osgi.core/8.0.0/osgi.core-8.0.0.jar,
+ marcin/.m2/repository/org/ops4j/pax/logging/pax-logging-api/2.3.0/pax-logging-api-2.3.0.jar,
+ marcin/.m2/repository/org/osgi/org.osgi.service.component.annotations/1.5.1/org.osgi.service.component.annotations-1.5.1.jar,
+ marcin/.m2/repository/org/osgi/org.osgi.service.component/1.5.1/org.osgi.service.component-1.5.1.jar,
+ marcin/ws-mag/openems/io.openems.wrapper/generated/io.openems.wrapper.fastexcel.jar,
+ marcin/.m2/repository/org/osgi/osgi.annotation/8.1.0/osgi.annotation-8.1.0.jar,
+ marcin/.m2/repository/org/slf4j/slf4j-simple/1.7.25/slf4j-simple-1.7.25.jar,
+ marcin/.m2/repository/org/apache/servicemix/bundles/org.apache.servicemix.bundles.junit/4.13.2_1/org.apache.servicemix.bundles.junit-4.13.2_1.jar
 Automatic-Module-Name: io.openems.common
-Export-Package: .,
- com.github.rzymek.opczip,
- com.github.rzymek.opczip.reader,
- com.github.rzymek.opczip.reader.ordered,
- com.github.rzymek.opczip.reader.skipping,
- io.openems.common;version="1.0.0",
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Export-Package: io.openems.common;version="1.0.0",
  io.openems.common.channel;version="1.0.0",
  io.openems.common.event;version="1.0.0",
  io.openems.common.exceptions;version="1.0.0",
@@ -29,6 +41,4 @@ Export-Package: .,
  io.openems.common.types;version="1.0.0",
  io.openems.common.utils;version="1.0.0",
  io.openems.common.websocket;version="1.0.0",
- io.openems.common.worker;version="1.0.0",
- org.dhatim.fastexcel,
- org.dhatim.fastexcel.reader
+ io.openems.common.worker;version="1.0.0"

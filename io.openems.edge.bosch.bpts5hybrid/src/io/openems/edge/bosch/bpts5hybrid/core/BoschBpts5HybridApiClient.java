@@ -80,13 +80,13 @@ public class BoschBpts5HybridApiClient {
 	protected void retreiveValues() throws OpenemsException {
 		var postRequest = this.httpClient.POST(BASE_URL + GET_VALUES_URL_PART + this.wuiSid);
 		postRequest.timeout(5, TimeUnit.SECONDS);
-		postRequest.header(HttpHeader.CONTENT_TYPE, "text/plain");
-		postRequest.content(new StringContentProvider(POST_REQUEST_DATA));
+//		postRequest.header(HttpHeader.CONTENT_TYPE, "text/plain");
+//		postRequest.content(new StringContentProvider(POST_REQUEST_DATA));
 
 		ContentResponse response;
 
 		try {
-			response = postRequest.send();
+			response = (ContentResponse) postRequest.send();
 
 			var status = response.getStatus();
 

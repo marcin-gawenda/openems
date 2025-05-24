@@ -13,7 +13,8 @@ Bundle-Version: 1.0.0.${tstamp}
 	io.openems.edge.common,\
 	io.openems.edge.ess.api,\
 	io.openems.edge.timedata.api,\
-
+	org.apache.felix.metatype,\
+	osgi.cmpn
 -testpath: \
 	${testpath},\
 	io.openems.j2mod
