@@ -4,6 +4,7 @@ import static io.openems.common.test.TestUtils.findRandomOpenPortOnAllLocalInter
 import static io.openems.edge.bridge.modbus.api.ModbusComponent.ChannelId.MODBUS_COMMUNICATION_FAILED;
 import io.openems.edge.common.test.DummyConfigurationAdmin;
 
+
 import org.junit.Test;
 
 import com.ghgande.j2mod.modbus.procimg.Register;
@@ -14,6 +15,7 @@ import com.ghgande.j2mod.modbus.slave.ModbusSlaveFactory;
 
 import io.openems.common.exceptions.OpenemsException;
 import io.openems.common.function.ThrowingRunnable;
+import io.openems.common.test.TestUtils;
 import io.openems.common.types.OpenemsType;
 import io.openems.edge.bridge.modbus.api.AbstractModbusBridge;
 import io.openems.edge.bridge.modbus.api.LogVerbosity;
@@ -237,12 +239,12 @@ public class BridgeModbusTcpImplTest {
 			}
 		}
 
-		@Override
-		protected ModbusProtocol defineModbusProtocol() {
-			return new ModbusProtocol(this, //
-					new FC3ReadRegistersTask(100, Priority.HIGH, //
-							m(ChannelId.REGISTER_100, new UnsignedWordElement(100)))); //
-		}
+//		@Override
+//		protected ModbusProtocol defineModbusProtocol() {
+//			return new ModbusProtocol(this, //
+//					new FC3ReadRegistersTask(100, Priority.HIGH, //
+//							m(ChannelId.REGISTER_100, new UnsignedWordElement(100)))); //
+//		}
 
 	}
 }

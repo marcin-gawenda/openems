@@ -9,7 +9,7 @@ import io.openems.edge.bridge.modbus.api.LogVerbosity;
 
 @ObjectClassDefinition(//
 		name = "Bridge Modbus/RTU over TCP", //
-		description = "Provides a service for connecting to, querying and writing to a Modbus/RTU device connected to RS485/Eth converter.")
+		description = "Provides a service for connecting to, querying and writing to a Modbus/RTU over TCP device connected to RS485/Eth converter.")
 @interface ConfigRtuOverTcp {
 
 	@AttributeDefinition(name = "Component-ID", description = "Unique ID of this Component")
@@ -32,6 +32,9 @@ import io.openems.edge.bridge.modbus.api.LogVerbosity;
 
 	@AttributeDefinition(name = "Invalidate elements after how many read Errors?", description = "Increase this value if modbus read errors happen frequently.")
 	int invalidateElementsAfterReadErrors() default 1;
+
+	@AttributeDefinition(name = "Interval [ms] between accesses", description = "Cycle skipping will be calculated from this value and core cycle time.")
+	int intervalBetweenAccesses() default 0;
 
 	String webconsole_configurationFactory_nameHint() default "Bridge Modbus/RTU over TCP [{id}]";
 }
