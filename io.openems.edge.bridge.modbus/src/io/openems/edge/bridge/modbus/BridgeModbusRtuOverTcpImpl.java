@@ -159,7 +159,7 @@ public class BridgeModbusRtuOverTcpImpl extends AbstractModbusBridge
 			 */
 			var connection = new TCPMasterConnection(this.getIpAddress());
 			connection.setPort(this.port);
-			connection.setTimeout(7000);
+			connection.setTimeout(5*AbstractModbusBridge.DEFAULT_TIMEOUT);
 			try {
 				connection.setUseRtuOverTcp(true);
 			} catch (Exception e) {
@@ -178,7 +178,7 @@ public class BridgeModbusRtuOverTcpImpl extends AbstractModbusBridge
 				throw new OpenemsException(
 						"Connection to [" + this.getIpAddress().getHostAddress() + "] failed: " + e.getMessage());
 			}
-			this._connection.getModbusTransport().setTimeout(AbstractModbusBridge.DEFAULT_TIMEOUT); //
+			this._connection.getModbusTransport().setTimeout(5*AbstractModbusBridge.DEFAULT_TIMEOUT); // TODO
 		}
 		return this._connection;
 	}
