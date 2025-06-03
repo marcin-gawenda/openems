@@ -164,7 +164,7 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 	}
 
 	private void logCycle(String msg) {
-		if (this.getLogVerbosity() == LogVerbosity.DEBUG_LOG) {
+		if (this.getLogVerbosity() != LogVerbosity.NONE) {
 			this.logInfo(this.log, msg);
 		}
 	}

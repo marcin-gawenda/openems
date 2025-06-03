@@ -2,4 +2,8 @@
 /generated/
 =======
 /bin_test/
+<<<<<<< HEAD
 >>>>>>> 7b572aa6d (implemented elecnova meter - part 1)
+=======
+/generated/
+>>>>>>> 807ae6b0c (elecnova impl)
