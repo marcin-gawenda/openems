@@ -1,9 +1,9 @@
 eclipse.preferences.version=1
-encoding//src/io/openems/edge/meter/elecnova/Config.java=UTF-8
-encoding//src/io/openems/edge/meter/elecnova/MyModbusDevice.java=UTF-8
-encoding//src/io/openems/edge/meter/elecnova/MyModbusDeviceImpl.java=UTF-8
-encoding//test/io/openems/edge/meter/elecnova/MyConfig.java=UTF-8
-encoding//test/io/openems/edge/meter/elecnova/MyModbusDeviceTest.java=UTF-8
+encoding//src/io/openems/edge/meter/elecnova/dts1946/Config.java=UTF-8
+encoding//src/io/openems/edge/meter/elecnova/dts1946/MeterElecnovaDts1946.java=UTF-8
+encoding//src/io/openems/edge/meter/elecnova/dts1946/MeterElecnovaDts1946Impl.java=UTF-8
+encoding//test/io/openems/edge/meter/elecnova/dts1946/MeterElecnovaDts1946ImplTest.java=UTF-8
+encoding//test/io/openems/edge/meter/elecnova/dts1946/MyConfig.java=UTF-8
 encoding/<project>=UTF-8
 encoding/bnd.bnd=UTF-8
 encoding/readme.adoc=UTF-8

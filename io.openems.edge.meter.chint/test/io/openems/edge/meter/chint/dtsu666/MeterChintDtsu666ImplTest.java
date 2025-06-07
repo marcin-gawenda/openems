@@ -1,18 +1,18 @@
-package io.openems.edge.meter.elecnova.dts1946;
+package io.openems.edge.meter.chint.dtsu666;
 
 import org.junit.Test;
 
 import io.openems.edge.common.test.AbstractComponentTest.TestCase;
-import io.openems.edge.meter.elecnova.dts1946.MeterElecnovaDts1946Impl;
+import io.openems.edge.meter.chint.dtsu666.MeterChintDtsu666Impl;
 import io.openems.edge.bridge.modbus.test.DummyModbusBridge;
 import io.openems.edge.common.test.ComponentTest;
 import io.openems.edge.common.test.DummyConfigurationAdmin;
 
-public class MeterElecnovaDts1946ImplTest {
+public class MeterChintDtsu666ImplTest {
 
 	@Test
 	public void test() throws Exception {
-		new ComponentTest(new MeterElecnovaDts1946Impl()) //
+		new ComponentTest(new MeterChintDtsu666Impl()) //
 				.addReference("cm", new DummyConfigurationAdmin()) //
 				.addReference("setModbus", new DummyModbusBridge("modbus0")) //
 				.activate(MyConfig.create() //

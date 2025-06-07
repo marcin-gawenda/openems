@@ -1,4 +1,4 @@
-package io.openems.edge.meter.elecnova;
+package io.openems.edge.meter.elecnova.dts1946;
 
 import io.openems.common.channel.AccessMode;
 import io.openems.common.channel.PersistencePriority;
@@ -11,7 +11,7 @@ import io.openems.edge.common.channel.value.Value;
 import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.meter.api.ElectricityMeter;
 
-public interface MyModbusDevice extends ElectricityMeter, ModbusComponent, OpenemsComponent {
+public interface MeterElecnovaDts1946 extends ElectricityMeter, ModbusComponent, OpenemsComponent {
 
 	public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
 		VOLTAGE_L1_L2(Doc.of(OpenemsType.INTEGER) //
