@@ -1,4 +1,4 @@
-package io.openems.edge.meter.elecnova;
+package io.openems.edge.meter.elecnova.dts1946;
 
 import static io.openems.edge.bridge.modbus.api.ElementToChannelConverter.INVERT_IF_TRUE;
 import static io.openems.edge.bridge.modbus.api.ElementToChannelConverter.SCALE_FACTOR_1;
@@ -46,11 +46,11 @@ import io.openems.edge.timedata.api.TimedataProvider;
  */
 @Designate(ocd = Config.class, factory = true)
 @Component(//
-		name = "io.openems.edge.meter.elecnova", //
+		name = "io.openems.edge.meter.elecnova.dts1946", //
 		immediate = true, //
 		configurationPolicy = ConfigurationPolicy.REQUIRE //
 )
-public class MyModbusDeviceImpl extends AbstractOpenemsModbusComponent implements MyModbusDevice, ElectricityMeter, TimedataProvider, ModbusComponent, OpenemsComponent {
+public class MeterElecnovaDts1946Impl extends AbstractOpenemsModbusComponent implements MeterElecnovaDts1946, ElectricityMeter, TimedataProvider, ModbusComponent, OpenemsComponent {
 
 	@Reference
 	private ConfigurationAdmin cm;
@@ -67,12 +67,12 @@ public class MyModbusDeviceImpl extends AbstractOpenemsModbusComponent implement
 
 	private MeterType meterType = MeterType.GRID;
 
-	public MyModbusDeviceImpl() {
+	public MeterElecnovaDts1946Impl() {
 		super(//
 				OpenemsComponent.ChannelId.values(), //
 				ModbusComponent.ChannelId.values(), //
 				ElectricityMeter.ChannelId.values(), //				
-				MyModbusDevice.ChannelId.values() //
+				MeterElecnovaDts1946.ChannelId.values() //
 		);
 	}
 
@@ -105,9 +105,9 @@ public class MyModbusDeviceImpl extends AbstractOpenemsModbusComponent implement
 						m(ElectricityMeter.ChannelId.VOLTAGE_L1, new FloatDoublewordElement(0x0000), SCALE_FACTOR_3), //
 						m(ElectricityMeter.ChannelId.VOLTAGE_L2, new FloatDoublewordElement(0x0002), SCALE_FACTOR_3), //
 						m(ElectricityMeter.ChannelId.VOLTAGE_L3, new FloatDoublewordElement(0x0004), SCALE_FACTOR_3), //
-						m(MyModbusDevice.ChannelId.VOLTAGE_L1_L2, new FloatDoublewordElement(0x0006), SCALE_FACTOR_3), //
-						m(MyModbusDevice.ChannelId.VOLTAGE_L2_L3, new FloatDoublewordElement(0x0008), SCALE_FACTOR_3), //
-						m(MyModbusDevice.ChannelId.VOLTAGE_L3_L1, new FloatDoublewordElement(0x000A), SCALE_FACTOR_3), //
+						m(MeterElecnovaDts1946.ChannelId.VOLTAGE_L1_L2, new FloatDoublewordElement(0x0006), SCALE_FACTOR_3), //
+						m(MeterElecnovaDts1946.ChannelId.VOLTAGE_L2_L3, new FloatDoublewordElement(0x0008), SCALE_FACTOR_3), //
+						m(MeterElecnovaDts1946.ChannelId.VOLTAGE_L3_L1, new FloatDoublewordElement(0x000A), SCALE_FACTOR_3), //
 						m(ElectricityMeter.ChannelId.CURRENT_L1, new FloatDoublewordElement(0x000C), SCALE_FACTOR_3), //
 						m(ElectricityMeter.ChannelId.CURRENT_L2, new FloatDoublewordElement(0x000E), SCALE_FACTOR_3), //
 						m(ElectricityMeter.ChannelId.CURRENT_L3, new FloatDoublewordElement(0x0010), SCALE_FACTOR_3), //
@@ -127,22 +127,22 @@ public class MyModbusDeviceImpl extends AbstractOpenemsModbusComponent implement
 								chain(INVERT_IF_TRUE(this.invert), SCALE_FACTOR_3)),
 						m(ElectricityMeter.ChannelId.REACTIVE_POWER, new FloatDoublewordElement(0x0020),
 								chain(INVERT_IF_TRUE(this.invert), SCALE_FACTOR_3)),						
-						m(MyModbusDevice.ChannelId.APPARENT_POWER_L1, new FloatDoublewordElement(0x0022), SCALE_FACTOR_3), //
-						m(MyModbusDevice.ChannelId.APPARENT_POWER_L2, new FloatDoublewordElement(0x0024), SCALE_FACTOR_3), //
-						m(MyModbusDevice.ChannelId.APPARENT_POWER_L3, new FloatDoublewordElement(0x0026), SCALE_FACTOR_3), //
-						m(MyModbusDevice.ChannelId.APPARENT_POWER, new FloatDoublewordElement(0x0028), SCALE_FACTOR_3), //						
-						m(MyModbusDevice.ChannelId.COS_PHI_L1, new FloatDoublewordElement(0x002A)), //
-						m(MyModbusDevice.ChannelId.COS_PHI_L2, new FloatDoublewordElement(0x002C)), //
-						m(MyModbusDevice.ChannelId.COS_PHI_L3, new FloatDoublewordElement(0x002E)), //
-						m(MyModbusDevice.ChannelId.COS_PHI, new FloatDoublewordElement(0x0030)), //						
+						m(MeterElecnovaDts1946.ChannelId.APPARENT_POWER_L1, new FloatDoublewordElement(0x0022), SCALE_FACTOR_3), //
+						m(MeterElecnovaDts1946.ChannelId.APPARENT_POWER_L2, new FloatDoublewordElement(0x0024), SCALE_FACTOR_3), //
+						m(MeterElecnovaDts1946.ChannelId.APPARENT_POWER_L3, new FloatDoublewordElement(0x0026), SCALE_FACTOR_3), //
+						m(MeterElecnovaDts1946.ChannelId.APPARENT_POWER, new FloatDoublewordElement(0x0028), SCALE_FACTOR_3), //						
+						m(MeterElecnovaDts1946.ChannelId.COS_PHI_L1, new FloatDoublewordElement(0x002A)), //
+						m(MeterElecnovaDts1946.ChannelId.COS_PHI_L2, new FloatDoublewordElement(0x002C)), //
+						m(MeterElecnovaDts1946.ChannelId.COS_PHI_L3, new FloatDoublewordElement(0x002E)), //
+						m(MeterElecnovaDts1946.ChannelId.COS_PHI, new FloatDoublewordElement(0x0030)), //						
 						m(ElectricityMeter.ChannelId.FREQUENCY, new FloatDoublewordElement(0x0032)), //
 						m(this.invert ? ElectricityMeter.ChannelId.ACTIVE_PRODUCTION_ENERGY : ElectricityMeter.ChannelId.ACTIVE_CONSUMPTION_ENERGY, 
 								new FloatDoublewordElement(0x0034), SCALE_FACTOR_3), //
 						m(this.invert ? ElectricityMeter.ChannelId.ACTIVE_CONSUMPTION_ENERGY : ElectricityMeter.ChannelId.ACTIVE_PRODUCTION_ENERGY, 
 								new FloatDoublewordElement(0x0036), SCALE_FACTOR_3), //
-						m(this.invert ? MyModbusDevice.ChannelId.REACTIVE_PRODUCTION_ENERGY : MyModbusDevice.ChannelId.REACTIVE_CONSUMPTION_ENERGY, 
+						m(this.invert ? MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY : MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY, 
 								new FloatDoublewordElement(0x0038), SCALE_FACTOR_3), //
-						m(this.invert ? MyModbusDevice.ChannelId.REACTIVE_CONSUMPTION_ENERGY : MyModbusDevice.ChannelId.REACTIVE_PRODUCTION_ENERGY, 
+						m(this.invert ? MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY : MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY, 
 								new FloatDoublewordElement(0x003A), SCALE_FACTOR_3) // 
 					)
 				);
@@ -150,31 +150,31 @@ public class MyModbusDeviceImpl extends AbstractOpenemsModbusComponent implement
 		// Reactive energy by quadrants
 		if (this.invert) {	// TODO verify inversion is correct						
 			modbusProtocol.addTask(new FC4ReadInputRegistersTask(0x010E, Priority.HIGH,
-				m(MyModbusDevice.ChannelId.APPARENT_ENERGY, new UnsignedDoublewordElement(0x010E), SCALE_FACTOR_1), //
-				m(MyModbusDevice.ChannelId.REACTIVE_CONSUMPTION_ENERGY_INDUCTIVE_Q_I, new UnsignedDoublewordElement(0x0110), SCALE_FACTOR_1), //
-				m(MyModbusDevice.ChannelId.REACTIVE_CONSUMPTION_ENERGY_CAPACITIVE_Q_I_I, new UnsignedDoublewordElement(0x0112), SCALE_FACTOR_1), //
-				m(MyModbusDevice.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
-				m(MyModbusDevice.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_V, new UnsignedDoublewordElement(0x0116), SCALE_FACTOR_1) //				 
+				m(MeterElecnovaDts1946.ChannelId.APPARENT_ENERGY, new UnsignedDoublewordElement(0x010E), SCALE_FACTOR_1), //
+				m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_INDUCTIVE_Q_I, new UnsignedDoublewordElement(0x0110), SCALE_FACTOR_1), //
+				m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_CAPACITIVE_Q_I_I, new UnsignedDoublewordElement(0x0112), SCALE_FACTOR_1), //
+				m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
+				m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_V, new UnsignedDoublewordElement(0x0116), SCALE_FACTOR_1) //				 
 				)
 			);
 		} else {
 			modbusProtocol.addTask(new FC4ReadInputRegistersTask(0x010E, Priority.HIGH,
-					m(MyModbusDevice.ChannelId.APPARENT_ENERGY, new UnsignedDoublewordElement(0x010E), SCALE_FACTOR_1), //
-					m(MyModbusDevice.ChannelId.REACTIVE_CONSUMPTION_ENERGY_INDUCTIVE_Q_I, new UnsignedDoublewordElement(0x0110), SCALE_FACTOR_1), //
-					m(MyModbusDevice.ChannelId.REACTIVE_CONSUMPTION_ENERGY_CAPACITIVE_Q_I_I, new UnsignedDoublewordElement(0x0112), SCALE_FACTOR_1), //
-					m(MyModbusDevice.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
-					m(MyModbusDevice.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_V, new UnsignedDoublewordElement(0x0116), SCALE_FACTOR_1) //				 
+					m(MeterElecnovaDts1946.ChannelId.APPARENT_ENERGY, new UnsignedDoublewordElement(0x010E), SCALE_FACTOR_1), //
+					m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_INDUCTIVE_Q_I, new UnsignedDoublewordElement(0x0110), SCALE_FACTOR_1), //
+					m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_CAPACITIVE_Q_I_I, new UnsignedDoublewordElement(0x0112), SCALE_FACTOR_1), //
+					m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
+					m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_V, new UnsignedDoublewordElement(0x0116), SCALE_FACTOR_1) //				 
 					)
 				);			
 		}
 		
 		modbusProtocol.addTask(new FC4ReadInputRegistersTask(0x05FA, Priority.HIGH,
-				m(MyModbusDevice.ChannelId.T_H_DU1, new UnsignedWordElement(0x05FA), SCALE_FACTOR_MINUS_2), //
-				m(MyModbusDevice.ChannelId.T_H_DU2, new UnsignedWordElement(0x05FB), SCALE_FACTOR_MINUS_2), //
-				m(MyModbusDevice.ChannelId.T_H_DU3, new UnsignedWordElement(0x05FC), SCALE_FACTOR_MINUS_2), //
-				m(MyModbusDevice.ChannelId.T_H_DI1, new UnsignedWordElement(0x05FD), SCALE_FACTOR_MINUS_2), //
-				m(MyModbusDevice.ChannelId.T_H_DI2, new UnsignedWordElement(0x05FE), SCALE_FACTOR_MINUS_2), //
-				m(MyModbusDevice.ChannelId.T_H_DI3, new UnsignedWordElement(0x05FF), SCALE_FACTOR_MINUS_2) //
+				m(MeterElecnovaDts1946.ChannelId.T_H_DU1, new UnsignedWordElement(0x05FA), SCALE_FACTOR_MINUS_2), //
+				m(MeterElecnovaDts1946.ChannelId.T_H_DU2, new UnsignedWordElement(0x05FB), SCALE_FACTOR_MINUS_2), //
+				m(MeterElecnovaDts1946.ChannelId.T_H_DU3, new UnsignedWordElement(0x05FC), SCALE_FACTOR_MINUS_2), //
+				m(MeterElecnovaDts1946.ChannelId.T_H_DI1, new UnsignedWordElement(0x05FD), SCALE_FACTOR_MINUS_2), //
+				m(MeterElecnovaDts1946.ChannelId.T_H_DI2, new UnsignedWordElement(0x05FE), SCALE_FACTOR_MINUS_2), //
+				m(MeterElecnovaDts1946.ChannelId.T_H_DI3, new UnsignedWordElement(0x05FF), SCALE_FACTOR_MINUS_2) //
 				)
 			);
 		

@@ -1,7 +1,7 @@
-package io.openems.edge.meter.elecnova.dts1946;
+package io.openems.edge.meter.chint.dtsu666;
 
 import io.openems.common.utils.ConfigUtils;
-import io.openems.edge.meter.elecnova.dts1946.Config;
+import io.openems.edge.meter.chint.dtsu666.Config;
 import io.openems.common.test.AbstractComponentConfig;
 import io.openems.common.types.MeterType;
 
