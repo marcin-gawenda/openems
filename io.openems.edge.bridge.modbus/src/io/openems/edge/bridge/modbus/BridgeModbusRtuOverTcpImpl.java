@@ -121,10 +121,13 @@ public class BridgeModbusRtuOverTcpImpl extends AbstractModbusBridge
 
 	@Override
 	public ModbusTransaction getNewModbusTransaction() throws OpenemsException {
-		var connection = this.getModbusConnection();
+		var connection = this.getModbusConnection();		
 		var transaction = new ModbusTCPTransaction(connection);
-		transaction.setRetries(AbstractModbusBridge.DEFAULT_RETRIES);
-//		transaction.setRetries(1);
+		
+		// TODO add configuration parameter
+		var retryCnt = 1 * AbstractModbusBridge.DEFAULT_RETRIES;
+		transaction.setRetries(retryCnt);
+		log.debug("retryCnt: " + retryCnt);
 		return transaction;
 		
 //		ModbusTransaction transaction;
@@ -159,7 +162,11 @@ public class BridgeModbusRtuOverTcpImpl extends AbstractModbusBridge
 			 */
 			var connection = new TCPMasterConnection(this.getIpAddress());
 			connection.setPort(this.port);
-			connection.setTimeout(5*AbstractModbusBridge.DEFAULT_TIMEOUT);
+			// TODO add configuration parameter
+			var connectionTimeout = 1 * AbstractModbusBridge.DEFAULT_TIMEOUT; 			
+			connection.setTimeout(connectionTimeout);
+			log.warn("connectionTimeout [ms]: " + connectionTimeout);
+
 			try {
 				connection.setUseRtuOverTcp(true);
 			} catch (Exception e) {
@@ -172,14 +179,21 @@ public class BridgeModbusRtuOverTcpImpl extends AbstractModbusBridge
 		if (!this._connection.isConnected()) {
 			try {
 				this._connection.connect();
+				
+				log.debug("Transport class: " + this._connection.getModbusTransport().getClass().getName());
+				
+				// TODO add configuration parameter
+				var transportTimeout = 1 * AbstractModbusBridge.DEFAULT_TIMEOUT; 			
+				this._connection.getModbusTransport().setTimeout(transportTimeout);
+				log.warn("transportTimeout [ms]: " + transportTimeout);								
 			} catch (Exception e) {
 				
 				log.error("Mag:", e);
 				throw new OpenemsException(
 						"Connection to [" + this.getIpAddress().getHostAddress() + "] failed: " + e.getMessage());
 			}
-			this._connection.getModbusTransport().setTimeout(5*AbstractModbusBridge.DEFAULT_TIMEOUT); // TODO
 		}
+		
 		return this._connection;
 	}
 
