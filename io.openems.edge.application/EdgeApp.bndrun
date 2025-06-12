@@ -139,7 +139,8 @@
 	bnd.identity;id='io.openems.edge.meter.elecnova',\
 	bnd.identity;id='io.openems.edge.meter.chint',\
 	bnd.identity;id='io.openems.edge.timedata.influxdb',\
-	bnd.identity;id='io.openems.edge.scheduler.allalphabetically'
+	bnd.identity;id='io.openems.edge.scheduler.allalphabetically',\
+	bnd.identity;id='io.openems.edge.deye'
 	bnd.identity;id='io.openems.edge.evse.chargepoint.keba',\
 	bnd.identity;id='io.openems.edge.evse.electricvehicle.generic',\
 	bnd.identity;id='io.openems.edge.fenecon.dess',\
@@ -403,7 +404,8 @@
 	org.apache.commons.commons-io;version='[2.19.0,2.19.1)',\
 	org.jsr-305;version='[3.0.2,3.0.3)',\
 	reactive-streams;version='[1.0.4,1.0.5)',\
-	org.apache.felix.http.jetty12;version='[1.0.34,1.0.35)'
+	org.apache.felix.http.jetty12;version='[1.0.34,1.0.35)',\
+	io.openems.edge.deye;version=snapshot
 	io.openems.edge.evcs.keba.kecontact;version=snapshot,\
 	io.openems.edge.evcs.mennekes;version=snapshot,\
 	io.openems.edge.evcs.ocpp.abl;version=snapshot,\

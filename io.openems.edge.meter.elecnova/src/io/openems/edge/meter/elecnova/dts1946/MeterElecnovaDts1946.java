@@ -65,13 +65,13 @@ public interface MeterElecnovaDts1946 extends ElectricityMeter, ModbusComponent,
 		// Reactive energy taken from the grid (registered by the grid meter as consumed by the metered system)
 		REACTIVE_CONSUMPTION_ENERGY(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.CUMULATED_WATT_HOURS) //
+				.unit(Unit.VOLT_AMPERE_REACTIVE_HOURS) //
 				.persistencePriority(PersistencePriority.HIGH)),
 		
 		// Reactive energy send to the grid (registered by the grid meter as fed-in from the metered system to the grid)
 		REACTIVE_PRODUCTION_ENERGY(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.CUMULATED_WATT_HOURS) //
+				.unit(Unit.VOLT_AMPERE_REACTIVE_HOURS) //
 				.persistencePriority(PersistencePriority.HIGH)),
 
 		// Reactive energy 1st quadrant
