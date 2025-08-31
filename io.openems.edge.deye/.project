@@ -21,6 +21,9 @@
 		<nature>bndtools.core.bndnature</nature>
 	</natures>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5c3a5b1ec (fix electnova)
 	<filteredResources>
 		<filter>
 			<id>1755982037590</id>
@@ -32,6 +35,9 @@
 			</matcher>
 		</filter>
 	</filteredResources>
+<<<<<<< HEAD
 =======
 >>>>>>> e17f858b8 (deye hybrid part 1)
+=======
+>>>>>>> 5c3a5b1ec (fix electnova)
 </projectDescription>

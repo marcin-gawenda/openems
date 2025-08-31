@@ -21,6 +21,9 @@
 		<nature>bndtools.core.bndnature</nature>
 	</natures>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5c3a5b1ec (fix electnova)
 	<filteredResources>
 		<filter>
 			<id>1755982037776</id>
@@ -32,6 +35,9 @@
 			</matcher>
 		</filter>
 	</filteredResources>
+<<<<<<< HEAD
 =======
 >>>>>>> 320566675 (chint dtsu666 part 1)
+=======
+>>>>>>> 5c3a5b1ec (fix electnova)
 </projectDescription>

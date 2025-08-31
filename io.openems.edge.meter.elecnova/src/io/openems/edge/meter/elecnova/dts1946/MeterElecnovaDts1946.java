@@ -87,7 +87,7 @@ public interface MeterElecnovaDts1946 extends ElectricityMeter, ModbusComponent,
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
 		// Reactive energy 3rd quadrant
-		REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_I_I(Doc.of(OpenemsType.LONG) //
+		REACTIVE_PRODUCTION_ENERGY_INDUCTIVE_Q_I_I_I(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.VOLT_AMPERE_REACTIVE_HOURS)
 				.persistencePriority(PersistencePriority.HIGH)), //

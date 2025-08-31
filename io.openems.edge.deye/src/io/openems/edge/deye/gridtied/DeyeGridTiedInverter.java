@@ -1,4 +1,4 @@
-package io.openems.edge.deye;
+package io.openems.edge.deye.gridtied;
 
 import io.openems.common.channel.AccessMode;
 import io.openems.common.channel.PersistencePriority;
@@ -9,15 +9,20 @@ import io.openems.edge.common.channel.Doc;
 import io.openems.edge.common.channel.IntegerReadChannel;
 import io.openems.edge.common.channel.value.Value;
 import io.openems.edge.common.component.OpenemsComponent;
+import io.openems.edge.deye.enums.InverterState;
 import io.openems.edge.meter.api.ElectricityMeter;
 
 import io.openems.edge.battery.api.*;
 
-public interface MyModbusDevice extends ElectricityMeter, ModbusComponent, OpenemsComponent {
+public interface DeyeGridTiedInverter extends ElectricityMeter, ModbusComponent, OpenemsComponent {
 
 	public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
 		
-		INVERTER_RUN_STATE(Doc.of(OpenemsType.INTEGER)), //
+		/**
+		 * Represents the state of the inverter.
+		 */
+		INVERTER_STATE(Doc.of(InverterState.values())
+				.persistencePriority(PersistencePriority.HIGH)), //
 		
 		/**
 		 * State of Charge.
