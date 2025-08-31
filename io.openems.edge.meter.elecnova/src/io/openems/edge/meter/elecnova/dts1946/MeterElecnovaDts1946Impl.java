@@ -153,7 +153,7 @@ public class MeterElecnovaDts1946Impl extends AbstractOpenemsModbusComponent imp
 				m(MeterElecnovaDts1946.ChannelId.APPARENT_ENERGY, new UnsignedDoublewordElement(0x010E), SCALE_FACTOR_1), //
 				m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_INDUCTIVE_Q_I, new UnsignedDoublewordElement(0x0110), SCALE_FACTOR_1), //
 				m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_CAPACITIVE_Q_I_I, new UnsignedDoublewordElement(0x0112), SCALE_FACTOR_1), //
-				m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
+				m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_INDUCTIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
 				m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_V, new UnsignedDoublewordElement(0x0116), SCALE_FACTOR_1) //				 
 				)
 			);
@@ -162,7 +162,7 @@ public class MeterElecnovaDts1946Impl extends AbstractOpenemsModbusComponent imp
 					m(MeterElecnovaDts1946.ChannelId.APPARENT_ENERGY, new UnsignedDoublewordElement(0x010E), SCALE_FACTOR_1), //
 					m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_INDUCTIVE_Q_I, new UnsignedDoublewordElement(0x0110), SCALE_FACTOR_1), //
 					m(MeterElecnovaDts1946.ChannelId.REACTIVE_CONSUMPTION_ENERGY_CAPACITIVE_Q_I_I, new UnsignedDoublewordElement(0x0112), SCALE_FACTOR_1), //
-					m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
+					m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_INDUCTIVE_Q_I_I_I, new UnsignedDoublewordElement(0x0114), SCALE_FACTOR_1), //
 					m(MeterElecnovaDts1946.ChannelId.REACTIVE_PRODUCTION_ENERGY_CAPACITIVE_Q_I_V, new UnsignedDoublewordElement(0x0116), SCALE_FACTOR_1) //				 
 					)
 				);			
@@ -183,7 +183,10 @@ public class MeterElecnovaDts1946Impl extends AbstractOpenemsModbusComponent imp
 
 	@Override
 	public String debugLog() {
-		return "L:" + this.getActivePower().asString() + ", U1: " + this.getVoltageL1();
+		return "\n\tid: " + this.getUnitId()				
+				+ ", L: " + this.getActivePower().asString() //
+				+ ", U1: " + this.getVoltageL1()
+		;
 	}
 	
 	@Override

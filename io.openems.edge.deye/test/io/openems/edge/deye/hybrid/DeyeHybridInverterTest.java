@@ -1,17 +1,18 @@
-package io.openems.edge.deye;
+package io.openems.edge.deye.hybrid;
 
 import org.junit.Test;
 
 import io.openems.edge.common.test.AbstractComponentTest.TestCase;
+import io.openems.edge.deye.hybrid.DeyeHybridInverterImpl;
 import io.openems.edge.bridge.modbus.test.DummyModbusBridge;
 import io.openems.edge.common.test.ComponentTest;
 import io.openems.edge.common.test.DummyConfigurationAdmin;
 
-public class MyModbusDeviceTest {
+public class DeyeHybridInverterTest {
 
 	@Test
 	public void test() throws Exception {
-		new ComponentTest(new MyModbusDeviceImpl()) //
+		new ComponentTest(new DeyeHybridInverterImpl()) //
 				.addReference("cm", new DummyConfigurationAdmin()) //
 				.addReference("setModbus", new DummyModbusBridge("modbus0")) //
 				.activate(MyConfig.create() //

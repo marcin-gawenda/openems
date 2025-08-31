@@ -204,9 +204,13 @@ public class MeterChintDtsu666Impl extends AbstractOpenemsModbusComponent implem
 
 	@Override
 	public String debugLog() {
-		return "L:" + this.getActivePower().asString() + ", U1: " + this.getVoltageL1();
+		return "\n\tid: " + this.getUnitId()				
+				+ ", L: " + this.getActivePower().asString() //
+				+ ", U1: " + this.getVoltageL1()
+		;
 	}
-	
+
+
 	@Override
 	public Timedata getTimedata() {
 		return this.timedata;

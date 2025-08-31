@@ -7,7 +7,7 @@ exec \
              /usr/bin/java \
                 -Dosgi.clean=true \
                 -Dorg.apache.felix.eventadmin.Timeout=0 \
-                -Dorg.apache.felix.http.host=localhost \
+                -Dorg.apache.felix.http.host=0.0.0.0 \
                 -Dfelix.cm.dir=/var/opt/openems/config \
                 -Dopenems.data.dir=/var/opt/openems/data \
                 -XX:+HeapDumpOnOutOfMemoryError \

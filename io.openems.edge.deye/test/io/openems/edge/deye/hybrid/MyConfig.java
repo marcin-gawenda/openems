@@ -1,6 +1,7 @@
-package io.openems.edge.deye;
+package io.openems.edge.deye.hybrid;
 
 import io.openems.common.utils.ConfigUtils;
+import io.openems.edge.deye.hybrid.Config;
 import io.openems.common.test.AbstractComponentConfig;
 import io.openems.common.types.MeterType;
 
