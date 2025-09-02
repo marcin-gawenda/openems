@@ -91,7 +91,7 @@ public class DeyeHybridInverterImpl extends AbstractOpenemsModbusComponent imple
 		if(super.activate(context, config.id(), config.alias(), config.enabled(), config.modbusUnitId(), this.cm, "Modbus",
 				config.modbus_id())) {
 			return;
-		}		
+		}
 	}
 
 	@Override
