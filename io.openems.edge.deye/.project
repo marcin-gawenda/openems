@@ -20,13 +20,6 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>bndtools.core.bndnature</nature>
 	</natures>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5c3a5b1ec (fix electnova)
-=======
->>>>>>> 5c3a5b1ecd7df0a7c8ebd9e5f8b7ab05c2910a4b
 	<filteredResources>
 		<filter>
 			<id>1755982037590</id>
@@ -38,12 +31,4 @@
 			</matcher>
 		</filter>
 	</filteredResources>
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e17f858b8 (deye hybrid part 1)
-=======
->>>>>>> 5c3a5b1ec (fix electnova)
-=======
->>>>>>> 5c3a5b1ecd7df0a7c8ebd9e5f8b7ab05c2910a4b
 </projectDescription>
