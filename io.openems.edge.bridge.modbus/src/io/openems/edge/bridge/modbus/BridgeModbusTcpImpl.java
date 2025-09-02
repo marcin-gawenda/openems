@@ -32,7 +32,6 @@ import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.common.event.EdgeEventConstants;
 import io.openems.edge.common.startstop.StartStoppable;
 
-
 /**
  * Provides a service for connecting to, querying and writing to a Modbus/TCP
  * device.
@@ -165,7 +164,7 @@ public class BridgeModbusTcpImpl extends AbstractModbusBridge
 
 	private void logCycle(String msg) {
 		if (this.getLogVerbosity() != LogVerbosity.NONE) {
-			this.logInfo(this.log, msg);
+//			this.logInfo(this.log, msg);
 		}
 	}
 

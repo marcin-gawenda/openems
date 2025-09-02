@@ -210,7 +210,6 @@
 	bnd.identity;id='io.openems.edge.timeofusetariff.tibber',\
 	bnd.identity;id='io.openems.edge.weather.openmeteo',\
 	bnd.identity;id='io.openems.edge.meter.elecnova',\
-
 	
 -runbundles: \
 	Java-WebSocket;version='[1.6.0,1.6.1)',\
@@ -417,7 +416,6 @@
 	io.openems.edge.evcs.webasto.unite;version=snapshot,\
 	io.openems.edge.evse.api;version=snapshot,\
 	io.openems.edge.evse.chargepoint.hardybarth;version=snapshot,\
-
 	io.openems.edge.evse.chargepoint.keba;version=snapshot,\
 	io.openems.edge.evse.electricvehicle.generic;version=snapshot,\
 	io.openems.edge.fenecon.dess;version=snapshot,\
@@ -555,4 +553,3 @@
 	rrd4j;version='[3.9.0,3.9.1)',\
 	stax2-api;version='[4.2.2,4.2.3)',\
 	io.openems.edge.meter.elecnova;version=snapshot
-
