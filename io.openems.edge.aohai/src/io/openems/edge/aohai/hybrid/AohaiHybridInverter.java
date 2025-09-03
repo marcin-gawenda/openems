@@ -47,6 +47,96 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.unit(Unit.MILLIAMPERE) //
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
+		// TODO MARCIN
+		
+		/*
+		 * 0: No load shedding 
+		 * 1: Bus high voltage 
+		 * 2: Grid low voltage 
+		 * 3: Grid high voltage
+		 * 4: High frequency
+		 * 5: BOOST high temperature
+		 * 6: Inverter high temperature
+		 * 7: Environmental high temperature
+		 * 8: loading speed
+		 * 9: generating reactive power
+		 * 10: excessive load
+		 * 11: under-frequency loading
+		 * 12: Active setting limit
+		 * 13: Multi-machine anti-reverse current
+		 * 14: Single-machine anti-reverse current
+		 * 15: Zero current mode
+		 * 16: Aging setting limit
+		 * 17: Line impedance limit
+		 * 18: Fan abnormality
+		 * 19: CT abnormality
+		 * 20: LLC over-temperature
+		 * 21: Battery discharge setting limit
+		 * 22: Power sales setting limit
+		 * 23: PV power over range
+		 */
+		DERATING_MODE_FLAG(Doc.of(OpenemsType.INTEGER) //				
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		BUS_VOLTAGE_POSITIVE(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+
+		BUS_VOLTAGE_NEGATIVE(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+
+		
+		GRID_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		GRID_VOLTAGE_L2(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		GRID_VOLTAGE_L3(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		GRID_VOLTAGE_L1_L2(Doc.of(OpenemsType.INTEGER) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.VOLT)
+				.persistencePriority(PersistencePriority.MEDIUM)), //
+		GRID_VOLTAGE_L2_L3(Doc.of(OpenemsType.INTEGER) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.VOLT)
+				.persistencePriority(PersistencePriority.MEDIUM)), //
+		GRID_VOLTAGE_L3_L1(Doc.of(OpenemsType.INTEGER) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.VOLT)
+				.persistencePriority(PersistencePriority.MEDIUM)), //	
+		
+		/*
+		 * A positive current value indicates that the current comes from the grid, 
+		 * and a negative current value indicates that the current flows to the grid.
+		 */
+		GRID_CURRENT_L1(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		GRID_CURRENT_L2(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		GRID_CURRENT_L3(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		GRID_COS_PHI(Doc.of(OpenemsType.FLOAT)
+				.accessMode(AccessMode.READ_ONLY)
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		GRID_FREQUENCY(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIHERTZ) //
+				.persistencePriority(PersistencePriority.HIGH)),
+		
+		
 		/**
 		 * State of Charge.
 		 *
@@ -242,30 +332,8 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.unit(Unit.DEZIDEGREE_CELSIUS) //
 				.persistencePriority(PersistencePriority.HIGH)), //		
 		
-		GRID_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIVOLT) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-
-		GRID_VOLTAGE_L2(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIVOLT) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-
-		GRID_VOLTAGE_L3(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIVOLT) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
 		
-		GRID_VOLTAGE_L1_L2(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.VOLT)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
-		GRID_VOLTAGE_L2_L3(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.VOLT)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
-		GRID_VOLTAGE_L3_L1(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.VOLT)
-				.persistencePriority(PersistencePriority.MEDIUM)), //	
+
 		
 		GRID_POWER_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.WATT) //
@@ -283,26 +351,14 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.unit(Unit.WATT) //
 				.persistencePriority(PersistencePriority.HIGH)), //			
 		
-		GRID_FREQUENCY(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIHERTZ) //
-				.persistencePriority(PersistencePriority.HIGH)),
+
 		
 		GRID_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.VOLT_AMPERE_REACTIVE)
 				.persistencePriority(PersistencePriority.MEDIUM)), //
 		
-		GRID_CURRENT_L1(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIAMPERE) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_CURRENT_L2(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIAMPERE) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_CURRENT_L3(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIAMPERE) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
+
 		
 		// EXT: probably it is measured by CT
 		
@@ -339,9 +395,7 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.unit(Unit.VOLT_AMPERE_REACTIVE)
 				.persistencePriority(PersistencePriority.MEDIUM)), //
 		
-		GRID_COS_PHI(Doc.of(OpenemsType.FLOAT)
-				.accessMode(AccessMode.READ_ONLY)
-				.persistencePriority(PersistencePriority.HIGH)), //		
+	
 		
 		// TODO not needed?
 		GRID_COS_PHI_INT(Doc.of(OpenemsType.INTEGER)
