@@ -126,8 +126,10 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 						new DummyRegisterElement(1,1),
 						m(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L1, new UnsignedWordElement(2), SCALE_FACTOR_2), // INV_VOLTAGE_L1: 231100 mV
 						m(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L2, new UnsignedWordElement(3), SCALE_FACTOR_2), // INV_VOLTAGE_L2: 234500 mV						
-						m(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L3, new UnsignedWordElement(4), SCALE_FACTOR_2) // INV_VOLTAGE_L3: 236200 mV
-						
+						m(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L3, new UnsignedWordElement(4), SCALE_FACTOR_2), // INV_VOLTAGE_L3: 236200 mV
+						m(AohaiHybridInverter.ChannelId.INV_CURRENT_L1, new SignedWordElement(5), SCALE_FACTOR_2), // INV_CURRENT_L1: 700 mA
+						m(AohaiHybridInverter.ChannelId.INV_CURRENT_L2, new SignedWordElement(6), SCALE_FACTOR_2), // INV_CURRENT_L2: -700 mA						
+						m(AohaiHybridInverter.ChannelId.INV_CURRENT_L3, new SignedWordElement(7), SCALE_FACTOR_2) // INV_CURRENT_L3: 700 mA
 						// TODO MARCIN
 						
 //						m(AohaiHybridInverter.ChannelId.REACTIVE_ENERGY_GEN_TODAY, new UnsignedWordElement(502), SCALE_FACTOR_2) // always 0				
@@ -247,9 +249,14 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 //				+ ", L:" //+ this.getActivePower().asString() //				
 				+ ", INVERTER_RUN_STATE: " + this.channel(AohaiHybridInverter.ChannelId.INVERTER_RUN_STATE).value().asString()
 				+ ", INV_VOLTAGE_L1: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L1).value().asString()
-				+ ", INV_VOLTAGE_L2: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L2).value().asString()
-				+ ", INV_VOLTAGE_L3: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L3).value().asString()
+//				+ ", INV_VOLTAGE_L2: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L2).value().asString()
+//				+ ", INV_VOLTAGE_L3: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L3).value().asString()
+				+ ", INV_CURRENT_L1: " + this.channel(AohaiHybridInverter.ChannelId.INV_CURRENT_L1).value().asString()
+//				+ ", INV_CURRENT_L2: " + this.channel(AohaiHybridInverter.ChannelId.INV_CURRENT_L2).value().asString()
+//				+ ", INV_CURRENT_L3: " + this.channel(AohaiHybridInverter.ChannelId.INV_CURRENT_L3).value().asString()
 				
+				
+				// TODO MARCIN
 //				+ ", ACTIVE_ENERGY_GEN_TODAY: " + this.channel(AohaiHybridInverter.ChannelId.ACTIVE_ENERGY_GEN_TODAY).value().asString()
 //				+ ", REACTIVE_ENERGY_GEN_TODAY: " + this.channel(AohaiHybridInverter.ChannelId.REACTIVE_ENERGY_GEN_TODAY).value().asString()
 //				+ ", BAT_CHARGE_TODAY: " + this.channel(AohaiHybridInverter.ChannelId.BAT_CHARGE_TODAY).value().asString()

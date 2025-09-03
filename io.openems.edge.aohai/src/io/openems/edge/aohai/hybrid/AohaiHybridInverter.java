@@ -17,7 +17,8 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 
 	public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
 		
-		INVERTER_RUN_STATE(Doc.of(OpenemsType.INTEGER)), //
+		INVERTER_RUN_STATE(Doc.of(OpenemsType.INTEGER)
+				.persistencePriority(PersistencePriority.HIGH)), //
 		
 		INV_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
@@ -32,9 +33,19 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.persistencePriority(PersistencePriority.HIGH)), //	
 		
 		/*
-		 * A positive current value indicates that the current is flowing to the grid, and a negative current value indicates that the current is coming from the grid.
+		 * A positive current value indicates that the current is flowing to the grid, 
+		 * and a negative current value indicates that the current is coming from the grid.
 		 * INV_CURRENT_L1-3
-		 */
+		 */		
+		INV_CURRENT_L1(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		INV_CURRENT_L2(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		INV_CURRENT_L3(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //
 		
 		/**
 		 * State of Charge.
