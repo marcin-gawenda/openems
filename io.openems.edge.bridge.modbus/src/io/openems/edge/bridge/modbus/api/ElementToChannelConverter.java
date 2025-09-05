@@ -42,6 +42,14 @@ public class ElementToChannelConverter {
 	 */
 	public static final ElementToChannelConverter SCALE_FACTOR_MINUS_3 = new ElementToChannelScaleFactorConverter(-3);
 
+	
+	/**
+	 * Applies a scale factor of -4. Converts value [1] to [0.0001].
+	 *
+	 * @see ElementToChannelScaleFactorFloatConverter
+	 */
+	public static final ElementToChannelConverter SCALE_FACTOR_MINUS_4_FLOAT = new ElementToChannelScaleFactorFloatConverter(-4);
+	
 	/**
 	 * Applies a scale factor of 1. Converts value [1] to [10].
 	 *
@@ -470,6 +478,7 @@ public class ElementToChannelConverter {
 		return switch (value) {
 		case null -> null;
 		case Boolean b -> b;
+		
 		case Short s -> {
 			long result = shortFactor.apply(s);
 			if (result >= Short.MIN_VALUE && result <= Short.MAX_VALUE) {

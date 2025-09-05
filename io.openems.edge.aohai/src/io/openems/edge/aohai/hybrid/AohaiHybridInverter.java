@@ -17,6 +17,15 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 
 	public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
 		
+		/*
+		0x00:Waiting state
+		0x01:Grid-connected state
+		0x02:Off-grid status
+		0x03:Fault status
+		0x04:Burn-in status
+		0x05:Bypass Status
+		0x06:Self-charging status
+		*/
 		INVERTER_RUN_STATE(Doc.of(OpenemsType.INTEGER)
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
@@ -85,7 +94,6 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		BUS_VOLTAGE_NEGATIVE(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
 				.persistencePriority(PersistencePriority.HIGH)), //	
-
 		
 		GRID_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
@@ -129,160 +137,45 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.persistencePriority(PersistencePriority.HIGH)), //		
 		
 		GRID_COS_PHI(Doc.of(OpenemsType.FLOAT)
-				.accessMode(AccessMode.READ_ONLY)
+				.accessMode(AccessMode.READ_ONLY)				
 				.persistencePriority(PersistencePriority.HIGH)), //	
 		
 		GRID_FREQUENCY(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIHERTZ) //
 				.persistencePriority(PersistencePriority.HIGH)),
 		
-		
-		/**
-		 * State of Charge.
-		 *
-		 * <ul>
-		 * <li>Type: Integer
-		 * <li>Unit: %
-		 * <li>Range: 0..100
-		 * </ul>
-		 */
-		BAT_SOC(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.PERCENT) //
-				.persistencePriority(PersistencePriority.HIGH)), //
-
-		/**
-		 * State of Health.
-		 *
-		 * <ul>
-		 * <li>Type: Integer
-		 * <li>Unit: %
-		 * <li>Range: 0..100
-		 * </ul>
-		 */
-		BAT_SOH(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.PERCENT) //
-				.persistencePriority(PersistencePriority.HIGH)), //
-
-		/**
-		 * Voltage of battery.
-		 *
-		 * <ul>
-		 * <li>Type: Integer
-		 * <li>Unit: V
-		 * </ul>
-		 */
-		BAT_VOLTAGE(Doc.of(OpenemsType.INTEGER) //
+		EPS_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
-				.persistencePriority(PersistencePriority.HIGH)), //
+				.persistencePriority(PersistencePriority.HIGH)), //		
 		
-		BAT_CURRENT(Doc.of(OpenemsType.INTEGER) //
+		EPS_VOLTAGE_L2(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		EPS_VOLTAGE_L3(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		EPS_CURRENT_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIAMPERE) //
-				.persistencePriority(PersistencePriority.HIGH)), //
+				.persistencePriority(PersistencePriority.HIGH)), //		
 		
-		BAT_POWER(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //
+		EPS_CURRENT_L2(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
 		
-		BAT_TEMP(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.DEZIDEGREE_CELSIUS) //
-				.persistencePriority(PersistencePriority.HIGH)), //
+		EPS_CURRENT_L3(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
 		
-		BAT_CAPACITY(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.AMPERE_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)), //
-		
-		BAT_CHARGE_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),
-
-		BAT_DISCHARGE_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),
-
-		ACTIVE_ENERGY_GEN_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
+		EPS_FREQUENCY(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIHERTZ) //
 				.persistencePriority(PersistencePriority.HIGH)),
 		
-		REACTIVE_ENERGY_GEN_TODAY(Doc.of(OpenemsType.INTEGER) //
+		MPPT_CNT(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),		
-		
-		E_GRID_SELL_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),		
-
-		E_GRID_BUY_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),		
-
-		// energy supplied to Load
-		E_LOAD_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),			
-
-		// energy generated from PV all strings
-		E_PV_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),	
-		
-		// energy generated from PV1
-		E_PV1_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),	
-
-		// energy generated from PV2
-		E_PV2_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),	
-
-		// energy generated from PV4
-		E_PV3_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)),	
-
-		// energy generated from PV4
-		E_PV4_TODAY(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
 				.persistencePriority(PersistencePriority.HIGH)),
 		
-		// sum of PVx power
-		POWER_PV(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)),
-		
-		POWER_PV1(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)),
-
-		POWER_PV2(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)),
-
-		POWER_PV3(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)),
-
-		POWER_PV4(Doc.of(OpenemsType.INTEGER) //
-				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)),
-
 		CURRENT_PV1(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.MILLIAMPERE) //
@@ -321,108 +214,301 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		VOLTAGE_PV4(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.MILLIVOLT) //
-				.persistencePriority(PersistencePriority.HIGH)),
+				.persistencePriority(PersistencePriority.HIGH)),		
 		
+		/*
+		 * 0: Load priority
+		 * 1: Battery priority
+		 * 2: Grid priority
+		 */
+		INV_PRIORITY(Doc.of(OpenemsType.INTEGER) //
+				.persistencePriority(PersistencePriority.HIGH)), //
 		
-		DC_TRANSFORMER_TEMP(Doc.of(OpenemsType.INTEGER) //
+		/*
+		 * 0: Lead-acid batteries
+		 * 1: Lithium batteries
+		 * 2: User defined 1
+		 * 3: User defined 2
+		 * 4: User Defined 3
+		 */
+		BAT_TYPE(Doc.of(OpenemsType.INTEGER) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		BMS_STATUS(Doc.of(OpenemsType.INTEGER) //				
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		/**
+		 * State of Charge.
+		 *
+		 * <ul>
+		 * <li>Type: Integer
+		 * <li>Unit: %
+		 * <li>Range: 0..100
+		 * </ul>
+		 */
+		BAT_SOC(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.PERCENT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		/**
+		 * State of Health.
+		 *
+		 * <ul>
+		 * <li>Type: Integer
+		 * <li>Unit: %
+		 * <li>Range: 0..100
+		 * </ul>
+		 */
+		BAT_SOH(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.PERCENT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		BAT_CYCLE_CNT(Doc.of(OpenemsType.INTEGER) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		/**
+		 * Voltage of battery.
+		 *
+		 * <ul>
+		 * <li>Type: Integer
+		 * <li>Unit: V
+		 * </ul>
+		 */
+		BAT_VOLTAGE(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		BAT_VOLTAGE_DSP(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIVOLT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		BAT_CURRENT(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		/* current value */
+		BAT_CHARGE_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		/* current value */
+		BAT_AC_CHARGE_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		/* current value */
+		BAT_DISCHARGE_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		BAT_TEMP(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.DEZIDEGREE_CELSIUS) //
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
-		HEAT_SINK_TEMP(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.DEZIDEGREE_CELSIUS) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		
-
-		
-		GRID_POWER_L1(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_POWER_L2(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //	
-		
-		GRID_POWER_L3(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //			
-		
-		GRID_POWER(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //			
-		
-
-		
-		GRID_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
+		BAT_CAPACITY(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.AMPERE_HOURS) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+				
+		/* energy sent today to battery */
+		BAT_CHARGE_TODAY(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.VOLT_AMPERE_REACTIVE)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.HIGH)),
 		
-
-		
-		// EXT: probably it is measured by CT
-		
-		GRID_EXT_CURRENT_L1(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIAMPERE) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_EXT_CURRENT_L2(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIAMPERE) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_EXT_CURRENT_L3(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.MILLIAMPERE) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_EXT_POWER_L1(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_EXT_POWER_L2(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //	
-		
-		GRID_EXT_POWER_L3(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //			
-		
-		GRID_EXT_POWER(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_EXT_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
+		/* total energy sent to battery */
+		BAT_CHARGE_TOTAL(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.VOLT_AMPERE_REACTIVE)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.LOW)),
 		
+		/* energy sent today to battery from grid */
+		BAT_AC_CHARGE_TODAY(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.HIGH)),
+		
+		/* total energy sent to battery from grid */
+		BAT_AC_CHARGE_TOTAL(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.LOW)),
+		
+		/* energy taken today from battery */
+		BAT_DISCHARGE_TODAY(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.HIGH)),
+		
+		/* total energy taken from battery */
+		BAT_DISCHARGE_TOTAL(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.LOW)),
+
 	
-		
-		// TODO not needed?
-		GRID_COS_PHI_INT(Doc.of(OpenemsType.INTEGER)
+		// energy generated from PV all strings
+		E_PV_TODAY(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.HIGH)),
+		
+		// total energy generated from PV all strings
+		E_PV_TOTAL(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.LOW)),	
+		
+		// total energy exported to Grid
+		E_GRID_SELL_TOTAL(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.HIGH)),		
+
+		// total energy imported from Grid
+		E_GRID_BUY_TOTAL(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT_HOURS) //
+				.persistencePriority(PersistencePriority.HIGH)),
+		
+		POWER_PV(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)),
+		
+		POWER_PV1(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)),
+
+		POWER_PV2(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)),
+
+		POWER_PV3(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)),
+
+		POWER_PV4(Doc.of(OpenemsType.LONG) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)),
+
+		GRID_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+
+		GRID_POWER_L1(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
 				.persistencePriority(PersistencePriority.HIGH)), //		
 		
-		
-		INV_OUT_POWER(Doc.of(OpenemsType.INTEGER) //
+		GRID_POWER_L2(Doc.of(OpenemsType.LONG) //
 				.unit(Unit.WATT) //
 				.persistencePriority(PersistencePriority.HIGH)), //	
 		
-		INV_OUT_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.VOLT_AMPERE_REACTIVE) //
-				.persistencePriority(PersistencePriority.MEDIUM)), //	
-		
-		UPS_LOAD_POWER(Doc.of(OpenemsType.INTEGER) //
+		GRID_POWER_L3(Doc.of(OpenemsType.LONG) //
 				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //	
+				.persistencePriority(PersistencePriority.HIGH)), //			
 
-		LOAD_POWER(Doc.of(OpenemsType.INTEGER) //
+		// TODO SUM
+		EPS_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+
+		EPS_POWER_L1(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		EPS_POWER_L2(Doc.of(OpenemsType.LONG) //
 				.unit(Unit.WATT) //
 				.persistencePriority(PersistencePriority.HIGH)), //	
-
-		LOAD_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
-				.unit(Unit.VOLT_AMPERE_REACTIVE) //
-				.persistencePriority(PersistencePriority.MEDIUM)) //	
 		
+		EPS_POWER_L3(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		// TODO SUM
+		EPS_APPARENT_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+
+		EPS_APPARENT_POWER_L1(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		EPS_APPARENT_POWER_L2(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		EPS_APPARENT_POWER_L3(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		// TODO SUM
+		INV_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+
+		INV_POWER_L1(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		INV_POWER_L2(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		INV_POWER_L3(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		// TODO SUM
+		INV_APPARENT_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+
+		INV_APPARENT_POWER_L1(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		INV_APPARENT_POWER_L2(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		INV_APPARENT_POWER_L3(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		INV_REACTIVE_POWER(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE_REACTIVE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+
+		INV_REACTIVE_POWER_L1(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE_REACTIVE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
+		
+		INV_REACTIVE_POWER_L2(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE_REACTIVE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		INV_REACTIVE_POWER_L3(Doc.of(OpenemsType.LONG) //
+				.unit(Unit.VOLT_AMPERE_REACTIVE) //
+				.persistencePriority(PersistencePriority.HIGH)), //			
+		
+		
+
+		/*
+		 * used during implementation for quick test 
+		 */				
+		TEST_U_INT(Doc.of(OpenemsType.INTEGER) //
+				.persistencePriority(PersistencePriority.VERY_LOW)), //	
+		
+		TEST_DOUBLE(Doc.of(OpenemsType.DOUBLE) //
+				.persistencePriority(PersistencePriority.VERY_LOW)), //	
+		
+		TEST_LONG(Doc.of(OpenemsType.LONG) //
+				.persistencePriority(PersistencePriority.VERY_LOW)), //	
+
 		;
 
 		private final Doc doc;
