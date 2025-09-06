@@ -60,8 +60,8 @@ public interface MeterElecnovaDts1946 extends ElectricityMeter, ModbusComponent,
 				.persistencePriority(PersistencePriority.HIGH)), //
 		COS_PHI(Doc.of(OpenemsType.FLOAT)
 				.accessMode(AccessMode.READ_ONLY)
-				.persistencePriority(PersistencePriority.HIGH)), //
-				
+				.persistencePriority(PersistencePriority.HIGH)), //					
+		
 		// Reactive energy taken from the grid (registered by the grid meter as consumed by the metered system)
 		REACTIVE_CONSUMPTION_ENERGY(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)

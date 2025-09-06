@@ -26,7 +26,7 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		0x05:Bypass Status
 		0x06:Self-charging status
 		*/
-		INVERTER_RUN_STATE(Doc.of(OpenemsType.INTEGER)
+		INV_STATUS(Doc.of(OpenemsType.INTEGER)
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
 		INV_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
@@ -84,16 +84,17 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		 * 22: Power sales setting limit
 		 * 23: PV power over range
 		 */
-		DERATING_MODE_FLAG(Doc.of(OpenemsType.INTEGER) //				
+		DERATING_MODE(Doc.of(OpenemsType.INTEGER) //				
 				.persistencePriority(PersistencePriority.HIGH)), //
 
-		BUS_VOLTAGE_POSITIVE(Doc.of(OpenemsType.INTEGER) //
+		BUS1_VOLTAGE(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
 				.persistencePriority(PersistencePriority.HIGH)), //	
 
-		BUS_VOLTAGE_NEGATIVE(Doc.of(OpenemsType.INTEGER) //
+		/* always 0 */
+		BUS2_VOLTAGE(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
-				.persistencePriority(PersistencePriority.HIGH)), //	
+				.persistencePriority(PersistencePriority.LOW)), //	
 		
 		GRID_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
@@ -110,15 +111,15 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		GRID_VOLTAGE_L1_L2(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.VOLT)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
+				.persistencePriority(PersistencePriority.LOW)), //
 		GRID_VOLTAGE_L2_L3(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.VOLT)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
+				.persistencePriority(PersistencePriority.LOW)), //
 		GRID_VOLTAGE_L3_L1(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.VOLT)
-				.persistencePriority(PersistencePriority.MEDIUM)), //	
+				.persistencePriority(PersistencePriority.LOW)), //	
 		
 		/*
 		 * A positive current value indicates that the current comes from the grid, 
@@ -135,8 +136,10 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		GRID_CURRENT_L3(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIAMPERE) //
 				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_COS_PHI(Doc.of(OpenemsType.FLOAT)
+		/*
+		 * in unit of 0.0001, e.g. returned -9998 = -0.9998
+		 */
+		GRID_COS_PHI(Doc.of(OpenemsType.INTEGER)
 				.accessMode(AccessMode.READ_ONLY)				
 				.persistencePriority(PersistencePriority.HIGH)), //	
 		
@@ -174,7 +177,7 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		
 		MPPT_CNT(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
-				.persistencePriority(PersistencePriority.HIGH)),
+				.persistencePriority(PersistencePriority.LOW)),
 		
 		CURRENT_PV1(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
@@ -223,6 +226,29 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		 */
 		INV_PRIORITY(Doc.of(OpenemsType.INTEGER) //
 				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		INV_TEMP(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.DEZIDEGREE_CELSIUS) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		/* section AC-DC */
+		INV_IPM_TEMP(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.DEZIDEGREE_CELSIUS) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		/* section DC-DC */
+		INV_LLC_TEMP(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.DEZIDEGREE_CELSIUS) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		ISO_RESISTANCE(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.KILOOHM) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		/* Leakage Current */
+		GFCI(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.MILLIAMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //		
 		
 		/*
 		 * 0: Lead-acid batteries
@@ -305,9 +331,10 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.unit(Unit.DEZIDEGREE_CELSIUS) //
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
+		/* not changing often */
 		BAT_CAPACITY(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.AMPERE_HOURS) //
-				.persistencePriority(PersistencePriority.HIGH)), //
+				.persistencePriority(PersistencePriority.LOW)), //
 				
 		/* energy sent today to battery */
 		BAT_CHARGE_TODAY(Doc.of(OpenemsType.LONG) //
@@ -345,7 +372,6 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 				.unit(Unit.WATT_HOURS) //
 				.persistencePriority(PersistencePriority.LOW)),
 
-	
 		// energy generated from PV all strings
 		E_PV_TODAY(Doc.of(OpenemsType.LONG) //
 				.accessMode(AccessMode.READ_ONLY)

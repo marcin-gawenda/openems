@@ -114,7 +114,7 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 	protected ModbusProtocol defineModbusProtocol() {
 		var modbusProtocol = new ModbusProtocol(this, //
 				new FC4ReadInputRegistersTask(0, Priority.HIGH,
-						m(AohaiHybridInverter.ChannelId.INVERTER_RUN_STATE, new UnsignedWordElement(0)), // INVERTER_RUN_STATE: 1 (Grid-connected)
+						m(AohaiHybridInverter.ChannelId.INV_STATUS, new UnsignedWordElement(0)), // INVERTER_RUN_STATE: 1 (Grid-connected)
 						new DummyRegisterElement(1,1),
 						m(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L1, new UnsignedWordElement(2), SCALE_FACTOR_2), // INV_VOLTAGE_L1: 231100 mV
 						m(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L2, new UnsignedWordElement(3), SCALE_FACTOR_2), // INV_VOLTAGE_L2: 234500 mV						
@@ -122,9 +122,16 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 						m(AohaiHybridInverter.ChannelId.INV_CURRENT_L1, new SignedWordElement(5), SCALE_FACTOR_2), // INV_CURRENT_L1: 700 mA
 						m(AohaiHybridInverter.ChannelId.INV_CURRENT_L2, new SignedWordElement(6), SCALE_FACTOR_2), // INV_CURRENT_L2: -700 mA						
 						m(AohaiHybridInverter.ChannelId.INV_CURRENT_L3, new SignedWordElement(7), SCALE_FACTOR_2), // INV_CURRENT_L3: 700 mA
-						new DummyRegisterElement(8,37),
-						// TODO MARCIN
-						m(AohaiHybridInverter.ChannelId.DERATING_MODE_FLAG, new UnsignedWordElement(38)), // DERATING_MODE_FLAG: 0
+						m(AohaiHybridInverter.ChannelId.BUS1_VOLTAGE, new UnsignedWordElement(8), SCALE_FACTOR_2), // 0
+						m(AohaiHybridInverter.ChannelId.BUS2_VOLTAGE, new UnsignedWordElement(9), SCALE_FACTOR_2), // 0						
+						m(AohaiHybridInverter.ChannelId.INV_TEMP, new SignedWordElement(10)),
+						m(AohaiHybridInverter.ChannelId.INV_IPM_TEMP, new SignedWordElement(11)),
+						m(AohaiHybridInverter.ChannelId.INV_LLC_TEMP, new SignedWordElement(12)),
+						new DummyRegisterElement(13,20),
+						m(AohaiHybridInverter.ChannelId.ISO_RESISTANCE, new UnsignedWordElement(21)),
+						m(AohaiHybridInverter.ChannelId.GFCI, new UnsignedWordElement(22)),
+						new DummyRegisterElement(23,37),
+						m(AohaiHybridInverter.ChannelId.DERATING_MODE, new UnsignedWordElement(38)), // DERATING_MODE: 0
 						new DummyRegisterElement(39,39),
 						new DummyRegisterElement(40,41),
 //						m(AohaiHybridInverter.ChannelId.BUS_VOLTAGE_POSITIVE, new UnsignedWordElement(40), SCALE_FACTOR_2), // 0
@@ -140,12 +147,7 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 //						m(AohaiHybridInverter.ChannelId.GRID_VOLTAGE_L2_L3, new UnsignedWordElement(49), SCALE_FACTOR_2), // GRID_VOLTAGE_L2_L3: 0 V - ?
 //						m(AohaiHybridInverter.ChannelId.GRID_VOLTAGE_L3_L1, new UnsignedWordElement(50), SCALE_FACTOR_2), // GRID_VOLTAGE_L3_L1: 0 V - ?
 						m(AohaiHybridInverter.ChannelId.GRID_FREQUENCY, new UnsignedWordElement(51), SCALE_FACTOR_1), // GRID_FREQUENCY: 49950 mHz
-						m(AohaiHybridInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(52), SCALE_FACTOR_MINUS_4_FLOAT ), // GRID_COS_PHI: 1.0
-//						m(AohaiHybridInverter.ChannelId.GRID_COS_PHI_1, new SignedWordElement(52), SCALE_FACTOR_MINUS_2), // GRID_COS_PHI: 1.0
-//						m(AohaiHybridInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(52)) // GRID_COS_PHI: 1.0
-//						m(AohaiHybridInverter.ChannelId.GRID_COS_PHI_INT, new SignedWordElement(52), MULTIPLY(0.0001d)) // GRID_COS_PHI: 1.0
-						//SCALE_FACTOR_MINUS_3
-//						m(AohaiHybridInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(52), DIVIDE(10000)) // GRID_COS_PHI: 1.0				
+						m(AohaiHybridInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(52)), // GRID_COS_PHI: 9998		
 						new DummyRegisterElement(53,53), // RealOPPercent: 0				
 						m(AohaiHybridInverter.ChannelId.EPS_FREQUENCY, new UnsignedWordElement(54), SCALE_FACTOR_1), // EPS_FREQUENCY: 49950 mHz
 						m(AohaiHybridInverter.ChannelId.EPS_VOLTAGE_L1, new UnsignedWordElement(55), SCALE_FACTOR_2), // EPS_VOLTAGE_L1: 233900 mV
@@ -165,7 +167,7 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 		
 		modbusProtocol.addTask(new FC4ReadInputRegistersTask(125, Priority.HIGH,
 				m(AohaiHybridInverter.ChannelId.INV_PRIORITY, new UnsignedWordElement(125)), // 
-				m(AohaiHybridInverter.ChannelId.BAT_TYPE, new UnsignedWordElement(126)), // offset 1000, BAT_TEMP: 160 dC 
+				m(AohaiHybridInverter.ChannelId.BAT_TYPE, new UnsignedWordElement(126)), // offset 1000, BAT_TYPE: 160 dC 
 				m(AohaiHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(127), SCALE_FACTOR_2), // BAT_VOLTAGE: 421100 mV
 				m(AohaiHybridInverter.ChannelId.BAT_SOC, new UnsignedWordElement(128)), // BAT_SOC: 63 %
 				m(AohaiHybridInverter.ChannelId.BAT_VOLTAGE_DSP, new UnsignedWordElement(129), SCALE_FACTOR_2), // BAT_VOLTAGE: 418100 mV
@@ -240,9 +242,10 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 			)
 		);
 		
-//		var rUInt = 52;
-//		modbusProtocol.addTask(new FC4ReadInputRegistersTask(rUInt, Priority.HIGH,
-//				m(AohaiHybridInverter.ChannelId.TEST_U_INT, new SignedWordElement(rUInt)) //
+//		var rUInt = 276;
+//		modbusProtocol.addTask(new FC3ReadRegistersTask(rUInt, Priority.HIGH,
+////		modbusProtocol.addTask(new FC4ReadInputRegistersTask(rUInt, Priority.HIGH,
+//				m(AohaiHybridInverter.ChannelId.TEST_U_INT, new UnsignedWordElement(rUInt)) //
 //			)
 //		);	
 	
@@ -267,14 +270,21 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 	public String debugLog() {
 		return "\n\tid: " + this.getUnitId()		
 //				+ ", L:" //+ this.getActivePower().asString() //				
-				+ ", INVERTER_RUN_STATE: " + this.channel(AohaiHybridInverter.ChannelId.INVERTER_RUN_STATE).value().asString()
+				+ ", INV_STATUS: " + this.channel(AohaiHybridInverter.ChannelId.INV_STATUS).value().asString()
 //				+ ", INV_VOLTAGE_L1: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L1).value().asString()
 //				+ ", INV_VOLTAGE_L2: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L2).value().asString()
 //				+ ", INV_VOLTAGE_L3: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L3).value().asString()
 //				+ ", INV_CURRENT_L1: " + this.channel(AohaiHybridInverter.ChannelId.INV_CURRENT_L1).value().asString()
 //				+ ", INV_CURRENT_L2: " + this.channel(AohaiHybridInverter.ChannelId.INV_CURRENT_L2).value().asString()
 //				+ ", INV_CURRENT_L3: " + this.channel(AohaiHybridInverter.ChannelId.INV_CURRENT_L3).value().asString()
-				+ ", DERATING_MODE_FLAG: " + this.channel(AohaiHybridInverter.ChannelId.DERATING_MODE_FLAG).value().asString()
+//				+ ", INV_TEMP: " + this.channel(AohaiHybridInverter.ChannelId.INV_TEMP).value().asString()
+//				+ ", INV_IPM_TEMP: " + this.channel(AohaiHybridInverter.ChannelId.INV_IPM_TEMP).value().asString()
+				+ ", INV_LLC_TEMP: " + this.channel(AohaiHybridInverter.ChannelId.INV_LLC_TEMP).value().asString()
+//				+ ", ISO_RESISTANCE: " + this.channel(AohaiHybridInverter.ChannelId.ISO_RESISTANCE).value().asString()
+//				+ ", GFCI: " + this.channel(AohaiHybridInverter.ChannelId.GFCI).value().asString()
+				+ ", DERATING_MODE: " + this.channel(AohaiHybridInverter.ChannelId.DERATING_MODE).value().asString()
+//				+ ", BUS1_VOLTAGE: " + this.channel(AohaiHybridInverter.ChannelId.BUS1_VOLTAGE).value().asString()
+//				+ ", BUS2_VOLTAGE: " + this.channel(AohaiHybridInverter.ChannelId.BUS2_VOLTAGE).value().asString()
 //				+ ", BUS_VOLTAGE_POSITIVE: " + this.channel(AohaiHybridInverter.ChannelId.BUS_VOLTAGE_POSITIVE).value().asString()
 //				+ ", BUS_VOLTAGE_NEGATIVE: " + this.channel(AohaiHybridInverter.ChannelId.BUS_VOLTAGE_NEGATIVE).value().asString()				
 //				+ ", GRID_VOLTAGE_L1: " + this.channel(AohaiHybridInverter.ChannelId.GRID_VOLTAGE_L1).value().asString()
@@ -287,7 +297,7 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 //				+ ", GRID_CURRENT_L2: " + this.channel(AohaiHybridInverter.ChannelId.GRID_CURRENT_L2).value().asString()
 //				+ ", GRID_CURRENT_L3: " + this.channel(AohaiHybridInverter.ChannelId.GRID_CURRENT_L3).value().asString()
 //				+ ", GRID_FREQUENCY: " + this.channel(AohaiHybridInverter.ChannelId.GRID_FREQUENCY).value().asString()
-				+ ", GRID_COS_PHI: " + this.channel(AohaiHybridInverter.ChannelId.GRID_COS_PHI).value().asString()
+//				+ ", GRID_COS_PHI: " + this.channel(AohaiHybridInverter.ChannelId.GRID_COS_PHI).value().asString()
 //				+ ", EPS_FREQUENCY: " + this.channel(AohaiHybridInverter.ChannelId.EPS_FREQUENCY).value().asString()				
 //				+ ", EPS_VOLTAGE_L1: " + this.channel(AohaiHybridInverter.ChannelId.EPS_VOLTAGE_L1).value().asString()
 //				+ ", EPS_VOLTAGE_L2: " + this.channel(AohaiHybridInverter.ChannelId.EPS_VOLTAGE_L2).value().asString()
@@ -316,15 +326,16 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 //				+ ", POWER_PV3: " + this.channel(AohaiHybridInverter.ChannelId.POWER_PV3).value().asString()
 //				+ ", POWER_PV4: " + this.channel(AohaiHybridInverter.ChannelId.POWER_PV4).value().asString()
 				+ ", GRID_POWER: " + this.channel(AohaiHybridInverter.ChannelId.GRID_POWER).value().asString()
-				+ ", GRID_POWER_L1: " + this.channel(AohaiHybridInverter.ChannelId.GRID_POWER_L1).value().asString()
-				+ ", GRID_POWER_L2: " + this.channel(AohaiHybridInverter.ChannelId.GRID_POWER_L2).value().asString()
-				+ ", GRID_POWER_L3: " + this.channel(AohaiHybridInverter.ChannelId.GRID_POWER_L3).value().asString()
+//				+ ", GRID_POWER_L1: " + this.channel(AohaiHybridInverter.ChannelId.GRID_POWER_L1).value().asString()
+//				+ ", GRID_POWER_L2: " + this.channel(AohaiHybridInverter.ChannelId.GRID_POWER_L2).value().asString()
+//				+ ", GRID_POWER_L3: " + this.channel(AohaiHybridInverter.ChannelId.GRID_POWER_L3).value().asString()
 				+ ", EPS_POWER_L1: " + this.channel(AohaiHybridInverter.ChannelId.EPS_POWER_L1).value().asString()
 //				+ ", EPS_POWER_L2: " + this.channel(AohaiHybridInverter.ChannelId.EPS_POWER_L2).value().asString()
 //				+ ", EPS_POWER_L3: " + this.channel(AohaiHybridInverter.ChannelId.EPS_POWER_L3).value().asString()
 //				+ ", EPS_APPARENT_POWER_L1: " + this.channel(AohaiHybridInverter.ChannelId.EPS_APPARENT_POWER_L1).value().asString()
 //				+ ", EPS_APPARENT_POWER_L2: " + this.channel(AohaiHybridInverter.ChannelId.EPS_APPARENT_POWER_L2).value().asString()
 //				+ ", EPS_APPARENT_POWER_L3: " + this.channel(AohaiHybridInverter.ChannelId.EPS_APPARENT_POWER_L3).value().asString()
+//				// TODO sum
 //				+ ", INV_POWER: " + this.channel(AohaiHybridInverter.ChannelId.INV_POWER).value().asString()
 				+ ", INV_POWER_L1: " + this.channel(AohaiHybridInverter.ChannelId.INV_POWER_L1).value().asString()
 //				+ ", INV_POWER_L2: " + this.channel(AohaiHybridInverter.ChannelId.INV_POWER_L2).value().asString()

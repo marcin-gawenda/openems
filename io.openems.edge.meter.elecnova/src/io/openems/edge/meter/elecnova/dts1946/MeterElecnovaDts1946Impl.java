@@ -178,6 +178,8 @@ public class MeterElecnovaDts1946Impl extends AbstractOpenemsModbusComponent imp
 				)
 			);
 		
+
+		
 		return modbusProtocol;
 	}
 
@@ -186,6 +188,7 @@ public class MeterElecnovaDts1946Impl extends AbstractOpenemsModbusComponent imp
 		return "\n\tid: " + this.getUnitId()				
 				+ ", L: " + this.getActivePower().asString() //
 				+ ", U1: " + this.getVoltageL1()
+//				+ ", COS_PHI: " + this.channel(MeterElecnovaDts1946.ChannelId.COS_PHI).value().asString()
 		;
 	}
 	
