@@ -27,8 +27,16 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 		0x06:Self-charging status
 		*/
 		INV_STATUS(Doc.of(OpenemsType.INTEGER)
-				.persistencePriority(PersistencePriority.HIGH)), //
+				.persistencePriority(PersistencePriority.HIGH)),
 		
+		/* Master inverter error code */
+		ERROR_CODE(Doc.of(OpenemsType.INTEGER)
+				.persistencePriority(PersistencePriority.HIGH)),
+		
+		/* Master inverter warning code */
+		WARN_CODE(Doc.of(OpenemsType.INTEGER)
+				.persistencePriority(PersistencePriority.HIGH)),
+
 		INV_VOLTAGE_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIVOLT) //
 				.persistencePriority(PersistencePriority.HIGH)), //		

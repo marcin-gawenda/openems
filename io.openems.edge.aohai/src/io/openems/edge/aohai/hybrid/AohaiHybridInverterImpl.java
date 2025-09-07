@@ -130,7 +130,10 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 						new DummyRegisterElement(13,20),
 						m(AohaiHybridInverter.ChannelId.ISO_RESISTANCE, new UnsignedWordElement(21)),
 						m(AohaiHybridInverter.ChannelId.GFCI, new UnsignedWordElement(22)),
-						new DummyRegisterElement(23,37),
+						new DummyRegisterElement(23,31),
+						m(AohaiHybridInverter.ChannelId.ERROR_CODE, new UnsignedWordElement(32)),
+						m(AohaiHybridInverter.ChannelId.WARN_CODE, new UnsignedWordElement(33)),
+						new DummyRegisterElement(34,37),
 						m(AohaiHybridInverter.ChannelId.DERATING_MODE, new UnsignedWordElement(38)), // DERATING_MODE: 0
 						new DummyRegisterElement(39,39),
 						new DummyRegisterElement(40,41),
@@ -271,6 +274,8 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 		return "\n\tid: " + this.getUnitId()		
 //				+ ", L:" //+ this.getActivePower().asString() //				
 				+ ", INV_STATUS: " + this.channel(AohaiHybridInverter.ChannelId.INV_STATUS).value().asString()
+				+ ", ERROR_CODE: " + this.channel(AohaiHybridInverter.ChannelId.ERROR_CODE).value().asString()
+				+ ", WARN_CODE: " + this.channel(AohaiHybridInverter.ChannelId.WARN_CODE).value().asString()
 //				+ ", INV_VOLTAGE_L1: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L1).value().asString()
 //				+ ", INV_VOLTAGE_L2: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L2).value().asString()
 //				+ ", INV_VOLTAGE_L3: " + this.channel(AohaiHybridInverter.ChannelId.INV_VOLTAGE_L3).value().asString()
