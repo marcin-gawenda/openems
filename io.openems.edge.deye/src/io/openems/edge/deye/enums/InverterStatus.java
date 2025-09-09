@@ -2,7 +2,7 @@ package io.openems.edge.deye.enums;
 
 import io.openems.common.types.OptionsEnum;
 
-public enum InverterState implements OptionsEnum {	
+public enum InverterStatus implements OptionsEnum {	
 	UNDEFINED(-1, "Undefined"), //
 	STANDBY(0, "Standby"), //
 	SELFCHECK(1, "Selfcheck"), //
@@ -13,7 +13,7 @@ public enum InverterState implements OptionsEnum {
 	private final int value;
 	private final String name;
 
-	private InverterState(int value, String name) {
+	private InverterStatus(int value, String name) {
 		this.value = value;
 		this.name = name;
 	}

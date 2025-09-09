@@ -10,6 +10,7 @@ import static io.openems.edge.bridge.modbus.api.ElementToChannelConverter.SCALE_
 import static io.openems.edge.bridge.modbus.api.ElementToChannelConverter.SCALE_FACTOR_MINUS_2;
 import static io.openems.edge.bridge.modbus.api.ElementToChannelConverter.chain;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -23,36 +24,37 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.Designate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.openems.common.exceptions.OpenemsException;
+import io.openems.common.types.ChannelAddress;
 import io.openems.common.types.MeterType;
+import io.openems.common.types.OpenemsType;
 import io.openems.edge.battery.api.Battery;
+import io.openems.edge.bridge.modbus.BridgeModbusRtuOverTcpImpl;
 import io.openems.edge.bridge.modbus.api.AbstractOpenemsModbusComponent;
 import io.openems.edge.bridge.modbus.api.BridgeModbus;
 
 import io.openems.edge.bridge.modbus.api.ModbusComponent;
 import io.openems.edge.bridge.modbus.api.ModbusProtocol;
+import io.openems.edge.common.channel.Channel;
+import io.openems.edge.common.channel.IntegerReadChannel;
 import io.openems.edge.common.channel.value.Value;
 import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.meter.api.ElectricityMeter;
 import io.openems.edge.bridge.modbus.api.element.DummyRegisterElement;
-import io.openems.edge.bridge.modbus.api.element.FloatDoublewordElement;
 import io.openems.edge.bridge.modbus.api.element.SignedWordElement;
-import io.openems.edge.bridge.modbus.api.element.StringWordElement;
 import io.openems.edge.bridge.modbus.api.element.UnsignedDoublewordElement;
 import io.openems.edge.bridge.modbus.api.element.UnsignedWordElement;
+import io.openems.edge.bridge.modbus.api.element.WordOrder;
 import io.openems.edge.bridge.modbus.api.task.FC3ReadRegistersTask;
-import io.openems.edge.bridge.modbus.api.task.FC4ReadInputRegistersTask;
 import io.openems.edge.common.taskmanager.Priority;
+import io.openems.edge.common.type.TypeUtils;
 import io.openems.edge.timedata.api.Timedata;
 import io.openems.edge.timedata.api.TimedataProvider;
-import io.openems.edge.ess.api.SymmetricEss;
 
 
-/**
- * Consumption: energy taken from the grid (registered by the grid meter as consumed by the metered system)
- * Production: energy send to the grid (registered by the grid meter as fed-in from the metered system to the grid)
- */
 @Designate(ocd = Config.class, factory = true)
 @Component(//
 		name = "io.openems.edge.deye.gridtied", //
@@ -61,6 +63,8 @@ import io.openems.edge.ess.api.SymmetricEss;
 )
 public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent implements DeyeGridTiedInverter, ElectricityMeter, TimedataProvider, ModbusComponent, OpenemsComponent {
 
+	private final static Logger log = LoggerFactory.getLogger(DeyeGridTiedInverterImpl.class);
+	
 	@Reference
 	private ConfigurationAdmin cm;
 
@@ -73,7 +77,7 @@ public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent imp
 		super.setModbus(modbus);
 	}
 
-	private MeterType meterType = MeterType.GRID;
+	private MeterType meterType = MeterType.PRODUCTION;
 
 	public DeyeGridTiedInverterImpl() {
 		super(//
@@ -82,6 +86,14 @@ public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent imp
 				ElectricityMeter.ChannelId.values(), //				
 				DeyeGridTiedInverter.ChannelId.values() //
 		);
+		
+		calculatePower(getPowerPv1Channel(), getVoltagePv1Channel(), getCurrentPv1Channel()); 
+		calculatePower(getPowerPv2Channel(), getVoltagePv2Channel(), getCurrentPv2Channel());
+		calculatePowerPv();		
+		calculateGridPower("L1", getGridPowerL1Channel(), getGridVoltageL1Channel(), getGridCurrentL1Channel());
+		calculateGridPower("L2", getGridPowerL2Channel(), getGridVoltageL2Channel(), getGridCurrentL2Channel());
+		calculateGridPower("L3", getGridPowerL3Channel(), getGridVoltageL3Channel(), getGridCurrentL3Channel());
+		fixGridReactivePower();
 	}
 
 	@Activate
@@ -107,194 +119,205 @@ public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent imp
 	
 	@Override
 	protected ModbusProtocol defineModbusProtocol() {
-		var modbusProtocol = new ModbusProtocol(this, //
-//				new FC3ReadRegistersTask(1, Priority.LOW,
-//						m(SymmetricEss.ChannelId.GRID_MODE, new UnsignedWordElement(1)), new DummyRegisterElement(2),
-//						m(DeyeGridTiedInverter.ChannelId.SERIAL_NUMBER, new StringWordElement(3, 5))),
-
+		var modbusProtocol = new ModbusProtocol(this,
 				new FC3ReadRegistersTask(59, Priority.HIGH,
-						m(DeyeGridTiedInverter.ChannelId.INVERTER_STATE, new UnsignedWordElement(59)), // INVERTER_STATE: 2 (normal)
-						m(DeyeGridTiedInverter.ChannelId.ACTIVE_ENERGY_GEN_TODAY, new SignedWordElement(60), SCALE_FACTOR_2), // always 0
-						m(DeyeGridTiedInverter.ChannelId.REACTIVE_ENERGY_GEN_TODAY, new SignedWordElement(61), SCALE_FACTOR_2) // always 0				
+//						m(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(39), SUBTRACT(1000)), // -800 = -0.8, seems to be the value expected for PF mode but not real value
+//						new DummyRegisterElement(40, 58),
+						m(DeyeGridTiedInverter.ChannelId.INV_STATUS, new UnsignedWordElement(59)), // INV_STATUS: 2 (normal)
+						m(DeyeGridTiedInverter.ChannelId.E_GRID_TODAY, new SignedWordElement(60), SCALE_FACTOR_2), // E_GRID_TODAY: 13100 Wh
+						new DummyRegisterElement(61, 62),
+//						m(DeyeGridTiedInverter.ChannelId.RE_GRID_TODAY, new SignedWordElement(61), SCALE_FACTOR_2), // always 0						
+						m(DeyeGridTiedInverter.ChannelId.E_GRID_TOTAL, new UnsignedDoublewordElement(63).wordOrder(WordOrder.LSWMSW), SCALE_FACTOR_MINUS_1), // E_GRID_TOTAL: 24967 kWh
+						new DummyRegisterElement(65, 72),
+//						m(DeyeGridTiedInverter.ChannelId.RE_GRID_TOTAL, new UnsignedDoublewordElement(65).wordOrder(WordOrder.LSWMSW), SCALE_FACTOR_MINUS_1), // RE_GRID_TOTAL: 0 kWh						
+						m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L1, new UnsignedWordElement(73), SCALE_FACTOR_2), // GRID_VOLTAGE_L1: 233900 mV
+						m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L2, new UnsignedWordElement(74), SCALE_FACTOR_2), // GRID_VOLTAGE_L2: 236100 mV
+						m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L3, new UnsignedWordElement(75), SCALE_FACTOR_2), // GRID_VOLTAGE_L3: 232400 mV
+						m(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L1, new UnsignedWordElement(76), SCALE_FACTOR_2), // GRID_CURRENT_L1: 1370 mA
+						m(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L2, new UnsignedWordElement(77), SCALE_FACTOR_2), // GRID_CURRENT_L2: 1470 mA
+						m(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L3, new UnsignedWordElement(78), SCALE_FACTOR_2), // GRID_CURRENT_L3: 1430 mA
+						m(DeyeGridTiedInverter.ChannelId.GRID_FREQUENCY, new UnsignedWordElement(79), SCALE_FACTOR_1), // GRID_FREQUENCY: 49950 mHz
+						new DummyRegisterElement(80, 83), // 1019 W
+						// GridPower value is weird, better to calculate it always
+//						m(DeyeGridTiedInverter.ChannelId.GRID_POWER, new UnsignedDoublewordElement(82).wordOrder(WordOrder.LSWMSW), SCALE_FACTOR_MINUS_1), // GRID_POWER: 1050 W
+						m(DeyeGridTiedInverter.ChannelId.GRID_APPARENT_POWER, new UnsignedDoublewordElement(84).wordOrder(WordOrder.LSWMSW), SCALE_FACTOR_MINUS_1), // GRID_APPARENT_POWER: 1097 VA
+						new DummyRegisterElement(86, 87), // 1023 W, out active						
+//						m(DeyeGridTiedInverter.ChannelId.GRID_POWER2, new UnsignedDoublewordElement(86).wordOrder(WordOrder.LSWMSW), SCALE_FACTOR_MINUS_1), 
+						m(DeyeGridTiedInverter.ChannelId.GRID_REACTIVE_POWER, new UnsignedDoublewordElement(88).wordOrder(WordOrder.LSWMSW), SCALE_FACTOR_MINUS_1), // GRID_REACTIVE_POWER: 200 var 
+						m(DeyeGridTiedInverter.ChannelId.DC_TRANS_TEMP, new SignedWordElement(90), SUBTRACT(1000)), // DC_TRANS_TEMP: 250 dC
+						m(DeyeGridTiedInverter.ChannelId.IGBT_TEMP, new SignedWordElement(91), SUBTRACT(1000)), // IGBT_TEMP: 250 dC
+						new DummyRegisterElement(92, 92),
+						m(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI, new UnsignedWordElement(93)), // 0 - 1000
+						new DummyRegisterElement(94, 97),
+//						m(DeyeGridTiedInverter.ChannelId.E_PV_TOTAL, new UnsignedDoublewordElement(96).wordOrder(WordOrder.LSWMSW), SCALE_FACTOR_MINUS_1), // weird value
+						m(DeyeGridTiedInverter.ChannelId.GFCI, new SignedWordElement(98), SCALE_FACTOR_1),
+						new DummyRegisterElement(99, 108),
+//						m(DeyeGridTiedInverter.ChannelId.E_PV_TODAY, new SignedWordElement(108), SCALE_FACTOR_2), // always 0
+						m(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV1, new UnsignedWordElement(109), SCALE_FACTOR_2), // VOLTAGE_PV1: 442100 mV
+						m(DeyeGridTiedInverter.ChannelId.CURRENT_PV1, new UnsignedWordElement(110), SCALE_FACTOR_2), // CURRENT_PV1: 2200 mA
+						m(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV2, new UnsignedWordElement(111), SCALE_FACTOR_2), //
+						m(DeyeGridTiedInverter.ChannelId.CURRENT_PV2, new UnsignedWordElement(112), SCALE_FACTOR_2) //
 					)
 				);
 		
-		modbusProtocol.addTask(new FC3ReadRegistersTask(514, Priority.HIGH,
-				m(DeyeGridTiedInverter.ChannelId.BAT_CHARGE_TODAY, new UnsignedWordElement(514), SCALE_FACTOR_2), // BAT_CHARGE_TODAY: 19100 Wh
-				m(DeyeGridTiedInverter.ChannelId.BAT_DISCHARGE_TODAY, new UnsignedWordElement(515), SCALE_FACTOR_2), // BAT_DISCHARGE_TODAY: 28800 Wh
-				new DummyRegisterElement(516, 519),
-				m(DeyeGridTiedInverter.ChannelId.E_GRID_BUY_TODAY, new UnsignedWordElement(520), SCALE_FACTOR_2), // E_GRID_BUY_TODAY: 0 Wh
-				m(DeyeGridTiedInverter.ChannelId.E_GRID_SELL_TODAY, new UnsignedWordElement(521), SCALE_FACTOR_2), // E_GRID_SELL_TODAY: 39800 Wh
-				new DummyRegisterElement(522, 525),
-				m(DeyeGridTiedInverter.ChannelId.E_LOAD_TODAY, new UnsignedWordElement(526), SCALE_FACTOR_2), // E_LOAD_TODAY: 600 Wh
-				new DummyRegisterElement(527, 528),
-				m(DeyeGridTiedInverter.ChannelId.E_PV_TODAY, new UnsignedWordElement(529), SCALE_FACTOR_2) // E_PV_TODAY: 36300 Wh
-//				m(DeyeGridTiedInverter.ChannelId.E_PV1_TODAY, new UnsignedWordElement(530), SCALE_FACTOR_2), // always 0
-//				m(DeyeGridTiedInverter.ChannelId.E_PV2_TODAY, new UnsignedWordElement(531), SCALE_FACTOR_2), // always 0
-//				m(DeyeGridTiedInverter.ChannelId.E_PV3_TODAY, new UnsignedWordElement(532), SCALE_FACTOR_2), // always 0
-//				m(DeyeGridTiedInverter.ChannelId.E_PV4_TODAY, new UnsignedWordElement(533), SCALE_FACTOR_2) // always 0						
-			)
-		);
-		modbusProtocol.addTask(new FC3ReadRegistersTask(540, Priority.HIGH,
-				m(DeyeGridTiedInverter.ChannelId.DC_TRANSFORMER_TEMP, new SignedWordElement(540), SUBTRACT(1000)), // DC_TRANSFORMER_TEMP: 250 dC
-				m(DeyeGridTiedInverter.ChannelId.HEAT_SINK_TEMP, new SignedWordElement(541), SUBTRACT(1000)) // HEAT_SINK_TEMP: 270 dC	
-			)
-		);	
-				
-		modbusProtocol.addTask(new FC3ReadRegistersTask(586, Priority.HIGH,
-				m(DeyeGridTiedInverter.ChannelId.BAT_TEMP, new SignedWordElement(586), SUBTRACT(1000)), // offset 1000, BAT_TEMP: 160 dC 
-				m(DeyeGridTiedInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_2), // BAT_VOLTAGE: 421000 mV
-				m(DeyeGridTiedInverter.ChannelId.BAT_SOC, new SignedWordElement(588)), // BAT_SOC: 63 %
-				new DummyRegisterElement(589),
-				m(DeyeGridTiedInverter.ChannelId.BAT_POWER, new SignedWordElement(590), SCALE_FACTOR_1), // BAT_POWER: 1200 W
-				m(DeyeGridTiedInverter.ChannelId.BAT_CURRENT, new SignedWordElement(591), SCALE_FACTOR_1) // BAT_CURRENT: 2860 mA			 
-//				m(DeyeGridTiedInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)) // BAT_CAPACITY: 200 Ah (420 V * 200 Ah = 84 kWh, >> 20 kWh ?)
-			)
-		);	
-		
-		modbusProtocol.addTask(new FC3ReadRegistersTask(598, Priority.HIGH,
-				m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L1, new UnsignedWordElement(598), SCALE_FACTOR_2), // GRID_VOLTAGE_L1: 233900 mV
-				m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L2, new UnsignedWordElement(599), SCALE_FACTOR_2), // GRID_VOLTAGE_L2: 236100 mV
-				m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L3, new UnsignedWordElement(600), SCALE_FACTOR_2), // GRID_VOLTAGE_L3: 232400 mV
-//				m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L1_L2, new UnsignedWordElement(601), SCALE_FACTOR_MINUS_1), // GRID_VOLTAGE_L1_L2: 6516 V - ?
-//				m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L2_L3, new UnsignedWordElement(602), SCALE_FACTOR_MINUS_1), // GRID_VOLTAGE_L2_L3: 6552 V -?
-//				m(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L3_L1, new UnsignedWordElement(603), SCALE_FACTOR_MINUS_1) // GRID_VOLTAGE_L3_L1: 0 V - ?
-				new DummyRegisterElement(601, 603),
-				m(DeyeGridTiedInverter.ChannelId.GRID_POWER_L1, new SignedWordElement(604)), // GRID_POWER_L1: -292 W 
-				m(DeyeGridTiedInverter.ChannelId.GRID_POWER_L2, new SignedWordElement(605)), // GRID_POWER_L2: -314 W
-				m(DeyeGridTiedInverter.ChannelId.GRID_POWER_L3, new SignedWordElement(606)), // GRID_POWER_L3: -309 W
-				m(DeyeGridTiedInverter.ChannelId.GRID_POWER, new SignedWordElement(607)), // GRID_POWER: -915 W
-				m(DeyeGridTiedInverter.ChannelId.GRID_REACTIVE_POWER, new SignedWordElement(608)), // GRID_APPARENT_POWER: 0 VA - reactive?
-				m(DeyeGridTiedInverter.ChannelId.GRID_FREQUENCY, new UnsignedWordElement(609), SCALE_FACTOR_1), // GRID_FREQUENCY: 49950 mHz
-				m(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L1, new SignedWordElement(610), SCALE_FACTOR_1), // GRID_CURRENT_L1: 1370 mA
-				m(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L2, new SignedWordElement(611), SCALE_FACTOR_1), // GRID_CURRENT_L2: 1470 mA
-				m(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L3, new SignedWordElement(612), SCALE_FACTOR_1), // GRID_CURRENT_L3: 1430 mA
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_CURRENT_L1, new SignedWordElement(613), SCALE_FACTOR_1), // GRID_EXT_CURRENT_L1: 10 mA - ?
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_CURRENT_L2, new SignedWordElement(614), SCALE_FACTOR_1), // GRID_EXT_CURRENT_L2: 50 mA - ?
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_CURRENT_L3, new SignedWordElement(615), SCALE_FACTOR_1), // GRID_EXT_CURRENT_L3: 30 mA - ?
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER_L1, new SignedWordElement(616)), // GRID_EXT_POWER_L1: 1 W
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER_L2, new SignedWordElement(617)), // GRID_EXT_POWER_L2: 2 W
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER_L3, new SignedWordElement(618)), // GRID_EXT_POWER_L3: 1 W
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER, new SignedWordElement(619)), // GRID_EXT_POWER: 4 W
-				m(DeyeGridTiedInverter.ChannelId.GRID_EXT_REACTIVE_POWER, new SignedWordElement(620)) // GRID_EXT_APPARENT_POWER: 0 VA
-//				m(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(621), DIVIDE(1000)) // GRID_COS_PHI: -75.0
-//				m(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(621)) // GRID_COS_PHI: -75.0
-				 
-			)
-		);			
-		
-//		modbusProtocol.addTask(new FC3ReadRegistersTask(621, Priority.HIGH,
-//				m(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI_INT, new SignedWordElement(621), SCALE_FACTOR_MINUS_2)
-////				m(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI_INT, new SignedWordElement(621), DIVIDE(1000)) 
+		// 63: TEST_INT: 53048 14hours
+		// 92: 4 dC inductance temp ?
+		// 95: always 0 ambient temp ?
+		// 93: cos phi always 1000
+		// 200: same as 60:
+		// 205: 0
+		// 208: 0
+//		var rUInt = 208;
+//		modbusProtocol.addTask(new FC3ReadRegistersTask(rUInt, Priority.HIGH,
+////		modbusProtocol.addTask(new FC4ReadInputRegistersTask(rUInt, Priority.HIGH,
+//				m(DeyeGridTiedInverter.ChannelId.TEST_INT, new UnsignedWordElement(rUInt)) //
+//			)
+//		);		
+//		
+//		// 201: same as 63:
+//		// 206: 0
+//		// 209: 0
+//		var rUDword = 209;
+//		modbusProtocol.addTask(new FC3ReadRegistersTask(rUDword, Priority.HIGH,
+////		modbusProtocol.addTask(new FC4ReadInputRegistersTask(rUInt, Priority.HIGH,
+//				m(DeyeGridTiedInverter.ChannelId.TEST_LONG, new UnsignedDoublewordElement(rUDword).wordOrder(WordOrder.LSWMSW)) //
 //			)
 //		);
 		
-		// GRID_POWER: -905 W, GRID_REACTIVE_POWER: 0 var, 
-		// INV_OUT_POWER: 950 W, INV_OUT_REACTIVE_POWER: 950 var, 
-		// UPS_LOAD_POWER: 45 W, LOAD_POWER: 45 W, LOAD_REACTIVE_POWER: 45 var
-		modbusProtocol.addTask(new FC3ReadRegistersTask(636, Priority.HIGH,
-				m(DeyeGridTiedInverter.ChannelId.INV_OUT_POWER, new SignedWordElement(636)),
-				m(DeyeGridTiedInverter.ChannelId.INV_OUT_REACTIVE_POWER, new SignedWordElement(637)),
-				new DummyRegisterElement(638, 642),
-				m(DeyeGridTiedInverter.ChannelId.UPS_LOAD_POWER, new UnsignedWordElement(643)),
-//				m(DeyeGridTiedInverter.ChannelId.UPS_LOAD_POWER, new SignedWordElement(644)),
-				new DummyRegisterElement(644, 652),
-				m(DeyeGridTiedInverter.ChannelId.LOAD_POWER, new SignedWordElement(653)),
-				m(DeyeGridTiedInverter.ChannelId.LOAD_REACTIVE_POWER, new SignedWordElement(654)) 
-				)
-		);
-
-		
-		
-		modbusProtocol.addTask(new FC3ReadRegistersTask(672, Priority.HIGH,
-//				m(DeyeGridTiedInverter.ChannelId.POWER_PV, new UnsignedWordElement(671)), // TODO: calculate the sum
-				m(DeyeGridTiedInverter.ChannelId.POWER_PV1, new UnsignedWordElement(672), SCALE_FACTOR_1), // in doc mistake, unit is 1W, POWER_PV1: 60 W
-				m(DeyeGridTiedInverter.ChannelId.POWER_PV2, new UnsignedWordElement(673), SCALE_FACTOR_1), // POWER_PV2: 0 W
-				m(DeyeGridTiedInverter.ChannelId.POWER_PV3, new UnsignedWordElement(674), SCALE_FACTOR_1), // POWER_PV3: 0 W
-				m(DeyeGridTiedInverter.ChannelId.POWER_PV4, new UnsignedWordElement(675), SCALE_FACTOR_1), // POWER_PV4: 0 W 
-				m(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV1, new UnsignedWordElement(676), SCALE_FACTOR_2), // VOLTAGE_PV1: 574100 mV
-				m(DeyeGridTiedInverter.ChannelId.CURRENT_PV1, new UnsignedWordElement(677), SCALE_FACTOR_2), // CURRENT_PV1: 1000 mA
-				m(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV2, new UnsignedWordElement(678), SCALE_FACTOR_2), //
-				m(DeyeGridTiedInverter.ChannelId.CURRENT_PV2, new UnsignedWordElement(679), SCALE_FACTOR_2), //
-				m(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV3, new UnsignedWordElement(680), SCALE_FACTOR_2), //
-				m(DeyeGridTiedInverter.ChannelId.CURRENT_PV3, new UnsignedWordElement(681), SCALE_FACTOR_2), //
-				m(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV4, new UnsignedWordElement(682), SCALE_FACTOR_2), //
-				m(DeyeGridTiedInverter.ChannelId.CURRENT_PV4, new UnsignedWordElement(683), SCALE_FACTOR_2) //				
-			)
-		);		
-						
 		return modbusProtocol;
+	}
+	
+	private void calculatePower(IntegerReadChannel powerChannel, IntegerReadChannel voltageChannel, IntegerReadChannel currentChannel) {		
+		final Consumer<Value<Integer>> calculate = ignore -> {
+			Optional<Integer> voltageOpt = voltageChannel.getNextValue().asOptional();
+			Optional<Integer> currentOpt = currentChannel.getNextValue().asOptional();
+			
+			if (voltageOpt.isPresent() && currentOpt.isPresent()) {
+			    Integer power = (int) ((voltageOpt.get() / 1_000.0) * (currentOpt.get() / 1_000.0)); // mV * mA -> W
+				this.logDebug(log, "calculatePower: " + power);
+				powerChannel.setNextValue(power);
+			} else {
+				this.logDebug(log, "calculatePower: one of volt or current is null");
+				powerChannel.setNextValue(null);
+			}
+		};
+		
+		voltageChannel.onSetNextValue(calculate);
+		currentChannel.onSetNextValue(calculate);		
+	}
+	
+	private void calculatePowerPv() {		
+		final Consumer<Value<Integer>> calculate = ignore -> {
+			Integer power = TypeUtils.sum(getPowerPv1Channel().getNextValue().get(), getPowerPv2Channel().getNextValue().get());			    
+			this.logDebug(log, "calculatePowerPv: " + power);			
+			getPowerPvChannel().setNextValue(power);
+		};
+		
+		getPowerPv1Channel().onSetNextValue(calculate);
+		getPowerPv2Channel().onSetNextValue(calculate);		
+	}
+	
+	
+	private void calculateGridPower(String phase, IntegerReadChannel powerChannel, IntegerReadChannel voltageChannel, IntegerReadChannel currentChannel) {		
+		final Consumer<Value<Integer>> calculate = ignore -> {
+			Optional<Integer> voltageOpt = voltageChannel.getNextValue().asOptional();
+			Optional<Integer> currentOpt = currentChannel.getNextValue().asOptional();
+			Optional<Integer> cosPhiOpt = getGridCosPhiChannel().getNextValue().asOptional();
+			
+			float cosPhi = 1.0f;
+			if (cosPhiOpt.isPresent()) {
+				if (cosPhiOpt.get() == 0) {
+					this.logDebug(log, "fixCosPhi: was 0, setting to 1000");
+					getGridCosPhiChannel().setNextValue(1000);	
+				} else {
+					cosPhi = cosPhiOpt.get() / 1_000.0f;
+					if (voltageOpt.isPresent() && currentOpt.isPresent()) {
+					    Integer power = (int) ((voltageOpt.get() / 1_000.0) * (currentOpt.get() / 1_000.0) * cosPhi); // mV * mA -> W, cos(phi) per phase is not available 
+						this.logDebug(log, "calculateGridPower: phase: " + phase + " power: " + power);
+						powerChannel.setNextValue(power);
+						// GridPower value is weird, better to calculate it always
+							// getGridPowerChannel().getNextValue().isDefined() && getGridPowerChannel().getNextValue().get() == 0				
+						if (getGridPowerL1Channel().getNextValue().isDefined() 
+							&& getGridPowerL2Channel().getNextValue().isDefined()
+							&& getGridPowerL3Channel().getNextValue().isDefined()) { // 
+							getGridPowerChannel().setNextValue(
+									getGridPowerL1Channel().getNextValue().get()
+									+ getGridPowerL2Channel().getNextValue().get()
+									+ getGridPowerL3Channel().getNextValue().get()
+								);
+							this.logDebug(log, "calculateGridPower: total grid power was 0, setting to sum of L1, L2, L3");
+						}						
+					} else {
+						this.logDebug(log, "calculateGridPower: one of Voltage or Current is null for phase: " + phase);
+						powerChannel.setNextValue(null);
+					}
+				}				
+			}
+		};
+		
+		voltageChannel.onSetNextValue(calculate);
+		currentChannel.onSetNextValue(calculate);
+		getGridCosPhiChannel().onSetNextValue(calculate);
+	}
+	
+	/*
+	 * observing weird values GRID_REACTIVE_POWER: 429496350 var
+	 */
+	private void fixGridReactivePower() {		
+		final Consumer<Value<Long>> calculate = ignore -> {
+			Optional<Long> valOpt = getGridReactivePowerChannel().getNextValue().asOptional();			
+			if (valOpt.isPresent() && valOpt.get() > 100_000) {
+				this.logInfo(log, "fixGridReactivePower: was: " + valOpt.get() + " [var], setting to 0");
+				getGridReactivePowerChannel().setNextValue(0);
+			}
+		};
+		
+		getGridReactivePowerChannel().onSetNextValue(calculate);
 	}
 	
 	@Override
 	public String debugLog() {		
 		return "\n\tid: " + this.getUnitId()
 //				+ ", L:" //+ this.getActivePower().asString() //
-//				+ ", getState():" + this.getState() //
-				+ ", INVERTER_STATE: " + this.channel(DeyeGridTiedInverter.ChannelId.INVERTER_STATE).value().asString()
-				+ ", ACTIVE_ENERGY_GEN_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.ACTIVE_ENERGY_GEN_TODAY).value().asString()
-				+ ", REACTIVE_ENERGY_GEN_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.REACTIVE_ENERGY_GEN_TODAY).value().asString()
-//				+ ", BAT_CHARGE_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_CHARGE_TODAY).value().asString()
-//				+ ", BAT_DISCHARGE_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_DISCHARGE_TODAY).value().asString()
-//				+ ", E_GRID_SELL_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_GRID_SELL_TODAY).value().asString()
-//				+ ", E_GRID_BUY_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_GRID_BUY_TODAY).value().asString()
-//				+ ", E_LOAD_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_LOAD_TODAY).value().asString()
+				+ ", INV_STATUS: " + this.channel(DeyeGridTiedInverter.ChannelId.INV_STATUS).value().asString()
+				+ ", E_GRID_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_GRID_TODAY).value().asString()
+//				+ ", RE_GRID_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.RE_GRID_TODAY).value().asString()
+//				+ ", E_GRID_TOTAL: " + this.channel(DeyeGridTiedInverter.ChannelId.E_GRID_TOTAL).value().asString()
+//				+ ", RE_GRID_TOTAL: " + this.channel(DeyeGridTiedInverter.ChannelId.RE_GRID_TOTAL).value().asString()
+				+ ", GRID_VOLTAGE_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L1).value().asString()
+				+ ", GRID_VOLTAGE_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L2).value().asString()
+				+ ", GRID_VOLTAGE_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L3).value().asString()				
+				+ ", GRID_CURRENT_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L1).value().asString()
+				+ ", GRID_CURRENT_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L2).value().asString()
+				+ ", GRID_CURRENT_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L3).value().asString()	
+//				+ ", GRID_FREQUENCY: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_FREQUENCY).value().asString()
+				+ ", GRID_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER).value().asString()
+//				+ ", GRID_POWER2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER2).value().asString()
+//				+ ", GRID_POWER_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER_L1).value().asString()
+//				+ ", GRID_POWER_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER_L2).value().asString()
+//				+ ", GRID_POWER_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER_L3).value().asString()
+//				+ ", GRID_APPARENT_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_APPARENT_POWER).value().asString()
+//				+ ", GRID_REACTIVE_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_REACTIVE_POWER).value().asString()
+//				+ ", DC_TRANS_TEMP: " + this.channel(DeyeGridTiedInverter.ChannelId.DC_TRANS_TEMP).value().asString()
+//				+ ", IGBT_TEMP: " + this.channel(DeyeGridTiedInverter.ChannelId.IGBT_TEMP).value().asString()
+				+ ", GRID_COS_PHI: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI).value().asString()
 //				+ ", E_PV_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_PV_TODAY).value().asString()
-//				+ ", E_PV1_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_PV1_TODAY).value().asString()
-//				+ ", E_PV2_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_PV2_TODAY).value().asString()
-//				+ ", E_PV3_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_PV3_TODAY).value().asString()
-//				+ ", E_PV4_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_PV4_TODAY).value().asString()				
-//				+ ", BAT_TEMP: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_TEMP).value().asString()
-//				+ ", BAT_VOLTAGE: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_VOLTAGE).value().asString()
-				+ ", BAT_SOC: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_SOC).value().asString()
-//				+ ", BAT_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_POWER).value().asString()
-//				+ ", BAT_CURRENT: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_CURRENT).value().asString()
-//				+ ", BAT_CAPACITY: " + this.channel(DeyeGridTiedInverter.ChannelId.BAT_CAPACITY).value().asString()				
-				+ ", POWER_PV: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV).value().asString()
-				+ ", POWER_PV1: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV1).value().asString() 
-//				+ ", POWER_PV2: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV2).value().asString()
-//				+ ", POWER_PV3: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV3).value().asString()
-//				+ ", POWER_PV4: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV4).value().asString()
+//				+ ", E_PV_TOTAL: " + this.channel(DeyeGridTiedInverter.ChannelId.E_PV_TOTAL).value().asString()
+//				+ ", GFCI: " + this.channel(DeyeGridTiedInverter.ChannelId.GFCI).value().asString()
 //				+ ", VOLTAGE_PV1: " + this.channel(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV1).value().asString()
 //				+ ", CURRENT_PV1: " + this.channel(DeyeGridTiedInverter.ChannelId.CURRENT_PV1).value().asString()
-//				+ ", DC_TRANSFORMER_TEMP: " + this.channel(DeyeGridTiedInverter.ChannelId.DC_TRANSFORMER_TEMP).value().asString()
-//				+ ", HEAT_SINK_TEMP: " + this.channel(DeyeGridTiedInverter.ChannelId.HEAT_SINK_TEMP).value().asString()
-//				+ ", GRID_VOLTAGE_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L1).value().asString()
-//				+ ", GRID_VOLTAGE_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L2).value().asString()
-//				+ ", GRID_VOLTAGE_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L3).value().asString()
-//				+ ", GRID_VOLTAGE_L1_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L1_L2).value().asString()
-//				+ ", GRID_VOLTAGE_L2_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L2_L3).value().asString()
-//				+ ", GRID_VOLTAGE_L3_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_VOLTAGE_L3_L1).value().asString()
-				+ ", GRID_POWER_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER_L1).value().asString()
-				+ ", GRID_POWER_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER_L2).value().asString()
-				+ ", GRID_POWER_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER_L3).value().asString()
-				+ ", GRID_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_POWER).value().asString()
-				+ ", GRID_REACTIVE_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_REACTIVE_POWER).value().asString()
-//				+ ", GRID_FREQUENCY: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_FREQUENCY).value().asString()
-//				+ ", GRID_CURRENT_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L1).value().asString()
-//				+ ", GRID_CURRENT_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L2).value().asString()
-//				+ ", GRID_CURRENT_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_CURRENT_L3).value().asString()
-//				+ ", GRID_EXT_CURRENT_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_CURRENT_L1).value().asString()
-//				+ ", GRID_EXT_CURRENT_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_CURRENT_L2).value().asString()
-//				+ ", GRID_EXT_CURRENT_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_CURRENT_L3).value().asString()
-//				+ ", GRID_EXT_POWER_L1: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER_L1).value().asString()
-//				+ ", GRID_EXT_POWER_L2: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER_L2).value().asString()
-//				+ ", GRID_EXT_POWER_L3: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER_L3).value().asString()
-//				+ ", GRID_EXT_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_POWER).value().asString()
-//				+ ", GRID_EXT_REACTIVE_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_EXT_REACTIVE_POWER).value().asString()
-//				+ ", GRID_COS_PHI: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI).value().asString()
-//				+ ", GRID_COS_PHI_INT: " + this.channel(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI_INT).value().asString()				
-				+ ", INV_OUT_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.INV_OUT_POWER).value().asString()
-				+ ", INV_OUT_REACTIVE_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.INV_OUT_REACTIVE_POWER).value().asString()
-				+ ", UPS_LOAD_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.UPS_LOAD_POWER).value().asString()
-				+ ", LOAD_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.LOAD_POWER).value().asString()
-				+ ", LOAD_REACTIVE_POWER: " + this.channel(DeyeGridTiedInverter.ChannelId.LOAD_REACTIVE_POWER).value().asString()
+//				+ ", VOLTAGE_PV2: " + this.channel(DeyeGridTiedInverter.ChannelId.VOLTAGE_PV2).value().asString()
+//				+ ", CURRENT_PV2: " + this.channel(DeyeGridTiedInverter.ChannelId.CURRENT_PV2).value().asString()
+//				+ ", POWER_PV1: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV1).value().asString() 
+//				+ ", POWER_PV2: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV2).value().asString()
+				+ ", POWER_PV: " + this.channel(DeyeGridTiedInverter.ChannelId.POWER_PV).value().asString()
 				
-				
+				// just for testing
+//				+ ", TEST_INT: " + this.channel(DeyeGridTiedInverter.ChannelId.TEST_INT).value().asString()
+//				+ ", TEST_LONG: " + this.channel(DeyeGridTiedInverter.ChannelId.TEST_LONG).value().asString()
 				;
 
 	}
-	
 	
 	@Override
 	public Timedata getTimedata() {

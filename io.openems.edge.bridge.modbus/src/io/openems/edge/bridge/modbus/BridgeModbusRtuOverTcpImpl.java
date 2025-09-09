@@ -212,7 +212,7 @@ public class BridgeModbusRtuOverTcpImpl extends AbstractModbusBridge
 
 	private void logCycle(String msg) {
 		if (this.getLogVerbosity() == LogVerbosity.DEBUG_LOG) {
-			this.logInfo(this.log, msg);
+			this.logInfo(log, msg);
 		}
 	}
 
