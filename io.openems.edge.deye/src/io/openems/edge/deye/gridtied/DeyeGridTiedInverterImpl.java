@@ -45,12 +45,14 @@ import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.meter.api.ElectricityMeter;
 import io.openems.edge.bridge.modbus.api.element.DummyRegisterElement;
 import io.openems.edge.bridge.modbus.api.element.SignedWordElement;
+import io.openems.edge.bridge.modbus.api.element.StringWordElement;
 import io.openems.edge.bridge.modbus.api.element.UnsignedDoublewordElement;
 import io.openems.edge.bridge.modbus.api.element.UnsignedWordElement;
 import io.openems.edge.bridge.modbus.api.element.WordOrder;
 import io.openems.edge.bridge.modbus.api.task.FC3ReadRegistersTask;
 import io.openems.edge.common.taskmanager.Priority;
 import io.openems.edge.common.type.TypeUtils;
+import io.openems.edge.deye.hybrid.DeyeHybridInverter;
 import io.openems.edge.timedata.api.Timedata;
 import io.openems.edge.timedata.api.TimedataProvider;
 
@@ -120,7 +122,11 @@ public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent imp
 	@Override
 	protected ModbusProtocol defineModbusProtocol() {
 		var modbusProtocol = new ModbusProtocol(this,
-				new FC3ReadRegistersTask(59, Priority.HIGH,
+				new FC3ReadRegistersTask(0, Priority.HIGH,
+						m(DeyeGridTiedInverter.ChannelId.TYPE, new UnsignedWordElement(0)), // YPE: 2:Grid-tied inverter
+						new DummyRegisterElement(1, 2),
+						m(DeyeGridTiedInverter.ChannelId.SN, new StringWordElement(3, 5)), // SN: 2309132384
+						new DummyRegisterElement(8, 58),
 //						m(DeyeGridTiedInverter.ChannelId.GRID_COS_PHI, new SignedWordElement(39), SUBTRACT(1000)), // -800 = -0.8, seems to be the value expected for PF mode but not real value
 //						new DummyRegisterElement(40, 58),
 						m(DeyeGridTiedInverter.ChannelId.INV_STATUS, new UnsignedWordElement(59)), // INV_STATUS: 2 (normal)
@@ -279,6 +285,8 @@ public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent imp
 	public String debugLog() {		
 		return "\n\tid: " + this.getUnitId()
 //				+ ", L:" //+ this.getActivePower().asString() //
+				+ ", TYPE: " + this.channel(DeyeGridTiedInverter.ChannelId.TYPE).value().asString()
+				+ ", SN: " + this.channel(DeyeGridTiedInverter.ChannelId.SN).value().asString()		
 				+ ", INV_STATUS: " + this.channel(DeyeGridTiedInverter.ChannelId.INV_STATUS).value().asString()
 				+ ", E_GRID_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_GRID_TODAY).value().asString()
 //				+ ", RE_GRID_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.RE_GRID_TODAY).value().asString()

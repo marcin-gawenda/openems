@@ -9,6 +9,7 @@ import io.openems.edge.common.channel.Doc;
 import io.openems.edge.common.channel.IntegerReadChannel;
 import io.openems.edge.common.channel.LongReadChannel;
 import io.openems.edge.common.component.OpenemsComponent;
+import io.openems.edge.deye.enums.DeviceType;
 import io.openems.edge.deye.enums.InverterStatus;
 import io.openems.edge.meter.api.ElectricityMeter;
 
@@ -19,6 +20,14 @@ import io.openems.edge.meter.api.ElectricityMeter;
 public interface DeyeGridTiedInverter extends ElectricityMeter, ModbusComponent, OpenemsComponent {
 
 	public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
+		
+		// device type
+		TYPE(Doc.of(DeviceType.values())
+				.persistencePriority(PersistencePriority.VERY_LOW)), //
+		
+		// serial number
+		SN(Doc.of(OpenemsType.STRING)
+				.persistencePriority(PersistencePriority.VERY_LOW)), //
 		
 		/**
 		 * Represents the state of the inverter.

@@ -9,6 +9,9 @@ import io.openems.edge.common.channel.Doc;
 import io.openems.edge.common.channel.IntegerReadChannel;
 import io.openems.edge.common.channel.value.Value;
 import io.openems.edge.common.component.OpenemsComponent;
+import io.openems.edge.deye.enums.DeviceType;
+import io.openems.edge.deye.enums.InverterStatus;
+import io.openems.edge.deye.gridtied.DeyeGridTiedInverter.ChannelId;
 import io.openems.edge.meter.api.ElectricityMeter;
 
 import io.openems.edge.battery.api.*;
@@ -17,7 +20,19 @@ public interface DeyeHybridInverter extends ElectricityMeter, ModbusComponent, O
 
 	public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
 		
-		INVERTER_RUN_STATE(Doc.of(OpenemsType.INTEGER)), //
+		// device type
+		TYPE(Doc.of(DeviceType.values())
+				.persistencePriority(PersistencePriority.VERY_LOW)), //
+		
+		// serial number
+		SN(Doc.of(OpenemsType.STRING)
+				.persistencePriority(PersistencePriority.VERY_LOW)), //
+		
+		/**
+		 * Represents the state of the inverter.
+		 */
+		INV_STATUS(Doc.of(InverterStatus.values())
+				.persistencePriority(PersistencePriority.HIGH)), //
 		
 		/**
 		 * State of Charge.
@@ -92,12 +107,14 @@ public interface DeyeHybridInverter extends ElectricityMeter, ModbusComponent, O
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.WATT_HOURS) //
 				.persistencePriority(PersistencePriority.HIGH)),		
-		
+			
+		// energy exported to Grid today
 		E_GRID_SELL_TODAY(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.WATT_HOURS) //
 				.persistencePriority(PersistencePriority.HIGH)),		
 
+		// energy imported from Grid today
 		E_GRID_BUY_TODAY(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.WATT_HOURS) //
@@ -206,7 +223,7 @@ public interface DeyeHybridInverter extends ElectricityMeter, ModbusComponent, O
 				.persistencePriority(PersistencePriority.HIGH)),
 		
 		
-		DC_TRANSFORMER_TEMP(Doc.of(OpenemsType.INTEGER) //
+		DC_TRANS_TEMP(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.DEZIDEGREE_CELSIUS) //
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
@@ -262,7 +279,12 @@ public interface DeyeHybridInverter extends ElectricityMeter, ModbusComponent, O
 		GRID_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.VOLT_AMPERE_REACTIVE)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
+				.persistencePriority(PersistencePriority.HIGH)), //
+		
+		GRID_APPARENT_POWER(Doc.of(OpenemsType.INTEGER) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.VOLT_AMPERE)
+				.persistencePriority(PersistencePriority.HIGH)), //
 		
 		GRID_CURRENT_L1(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.MILLIAMPERE) //
@@ -309,25 +331,28 @@ public interface DeyeHybridInverter extends ElectricityMeter, ModbusComponent, O
 		GRID_EXT_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
 				.unit(Unit.VOLT_AMPERE_REACTIVE)
-				.persistencePriority(PersistencePriority.MEDIUM)), //
-		
-		GRID_COS_PHI(Doc.of(OpenemsType.FLOAT)
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		GRID_EXT_APPARENT_POWER(Doc.of(OpenemsType.INTEGER) //
+				.accessMode(AccessMode.READ_ONLY)
+				.unit(Unit.VOLT_AMPERE)
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		GRID_COS_PHI(Doc.of(OpenemsType.INTEGER)
 				.accessMode(AccessMode.READ_ONLY)
 				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		// TODO not needed?
-		GRID_COS_PHI_INT(Doc.of(OpenemsType.INTEGER)
-				.accessMode(AccessMode.READ_ONLY)
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		
+				
 		INV_OUT_POWER(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.WATT) //
 				.persistencePriority(PersistencePriority.HIGH)), //	
 		
 		INV_OUT_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.VOLT_AMPERE_REACTIVE) //
-				.persistencePriority(PersistencePriority.MEDIUM)), //	
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		INV_OUT_APPARENT_POWER(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
 		
 		UPS_LOAD_POWER(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.WATT) //
@@ -339,7 +364,23 @@ public interface DeyeHybridInverter extends ElectricityMeter, ModbusComponent, O
 
 		LOAD_REACTIVE_POWER(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.VOLT_AMPERE_REACTIVE) //
-				.persistencePriority(PersistencePriority.MEDIUM)) //	
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		LOAD_APPARENT_POWER(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.VOLT_AMPERE) //
+				.persistencePriority(PersistencePriority.HIGH)), //	
+		
+		/*
+		 * used during implementation for quick test 
+		 */				
+		TEST_INT(Doc.of(OpenemsType.INTEGER) //
+				.persistencePriority(PersistencePriority.VERY_LOW)), //	
+		
+		TEST_DOUBLE(Doc.of(OpenemsType.DOUBLE) //
+				.persistencePriority(PersistencePriority.VERY_LOW)), //	
+		
+		TEST_LONG(Doc.of(OpenemsType.LONG) //
+				.persistencePriority(PersistencePriority.VERY_LOW)), //	
 		
 		;
 
@@ -354,4 +395,17 @@ public interface DeyeHybridInverter extends ElectricityMeter, ModbusComponent, O
 			return this.doc;
 		}
 	}	
+	
+		
+	public default IntegerReadChannel getPowerPv1Channel() {
+		return this.channel(ChannelId.POWER_PV1);
+	}
+		
+	public default IntegerReadChannel getPowerPv2Channel() {
+		return this.channel(ChannelId.POWER_PV2);
+	}	
+	
+	public default IntegerReadChannel getPowerPvChannel() {
+		return this.channel(ChannelId.POWER_PV);
+	}
 }
