@@ -17,6 +17,14 @@ public interface AohaiHybridInverter extends ElectricityMeter, ModbusComponent, 
 
 	public enum ChannelId implements io.openems.edge.common.channel.ChannelId {
 		
+		// device type
+		TYPE(Doc.of(OpenemsType.INTEGER)
+				.persistencePriority(PersistencePriority.VERY_LOW)), //
+		
+		// serial number
+		SN(Doc.of(OpenemsType.STRING)
+				.persistencePriority(PersistencePriority.VERY_LOW)), //
+		
 		/*
 		0x00:Waiting state
 		0x01:Grid-connected state

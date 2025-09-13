@@ -51,7 +51,7 @@ import io.openems.edge.bridge.modbus.api.task.FC4ReadInputRegistersTask;
 import io.openems.edge.common.taskmanager.Priority;
 import io.openems.edge.timedata.api.Timedata;
 import io.openems.edge.timedata.api.TimedataProvider;
-import io.openems.edge.ess.api.SymmetricEss;
+
 
 
 /**
@@ -245,6 +245,13 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 			)
 		);
 		
+		modbusProtocol.addTask(new FC3ReadRegistersTask(2, Priority.LOW,
+				m(AohaiHybridInverter.ChannelId.TYPE, new UnsignedWordElement(2)), // TYPE: 2010, 
+				new DummyRegisterElement(3, 4),
+				m(AohaiHybridInverter.ChannelId.SN, new StringWordElement(5, 15)) // SN: THB008KA24440010
+			)
+		);
+		
 //		var rUInt = 276;
 //		modbusProtocol.addTask(new FC3ReadRegistersTask(rUInt, Priority.HIGH,
 ////		modbusProtocol.addTask(new FC4ReadInputRegistersTask(rUInt, Priority.HIGH,
@@ -272,7 +279,9 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 	@Override
 	public String debugLog() {
 		return "\n\tid: " + this.getUnitId()		
-//				+ ", L:" //+ this.getActivePower().asString() //				
+//				+ ", L:" //+ this.getActivePower().asString() //		
+				+ ", TYPE: " + this.channel(AohaiHybridInverter.ChannelId.TYPE).value().asString()
+				+ ", SN: " + this.channel(AohaiHybridInverter.ChannelId.SN).value().asString()			
 				+ ", INV_STATUS: " + this.channel(AohaiHybridInverter.ChannelId.INV_STATUS).value().asString()
 				+ ", ERROR_CODE: " + this.channel(AohaiHybridInverter.ChannelId.ERROR_CODE).value().asString()
 				+ ", WARN_CODE: " + this.channel(AohaiHybridInverter.ChannelId.WARN_CODE).value().asString()

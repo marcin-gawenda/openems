@@ -123,7 +123,7 @@ public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent imp
 	protected ModbusProtocol defineModbusProtocol() {
 		var modbusProtocol = new ModbusProtocol(this,
 				new FC3ReadRegistersTask(0, Priority.HIGH,
-						m(DeyeGridTiedInverter.ChannelId.TYPE, new UnsignedWordElement(0)), // YPE: 2:Grid-tied inverter
+						m(DeyeGridTiedInverter.ChannelId.TYPE, new UnsignedWordElement(0)), // TYPE: 2:Grid-tied inverter
 						new DummyRegisterElement(1, 2),
 						m(DeyeGridTiedInverter.ChannelId.SN, new StringWordElement(3, 5)), // SN: 2309132384
 						new DummyRegisterElement(8, 58),
@@ -285,8 +285,8 @@ public class DeyeGridTiedInverterImpl extends AbstractOpenemsModbusComponent imp
 	public String debugLog() {		
 		return "\n\tid: " + this.getUnitId()
 //				+ ", L:" //+ this.getActivePower().asString() //
-				+ ", TYPE: " + this.channel(DeyeGridTiedInverter.ChannelId.TYPE).value().asString()
-				+ ", SN: " + this.channel(DeyeGridTiedInverter.ChannelId.SN).value().asString()		
+//				+ ", TYPE: " + this.channel(DeyeGridTiedInverter.ChannelId.TYPE).value().asString()
+//				+ ", SN: " + this.channel(DeyeGridTiedInverter.ChannelId.SN).value().asString()		
 				+ ", INV_STATUS: " + this.channel(DeyeGridTiedInverter.ChannelId.INV_STATUS).value().asString()
 				+ ", E_GRID_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.E_GRID_TODAY).value().asString()
 //				+ ", RE_GRID_TODAY: " + this.channel(DeyeGridTiedInverter.ChannelId.RE_GRID_TODAY).value().asString()
