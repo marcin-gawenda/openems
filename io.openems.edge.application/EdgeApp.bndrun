@@ -208,7 +208,8 @@
 	bnd.identity;id='io.openems.edge.timeofusetariff.swisspower',\
 	bnd.identity;id='io.openems.edge.timeofusetariff.tibber',\
 	bnd.identity;id='io.openems.edge.weather.openmeteo',\
-	bnd.identity;id='io.openems.edge.aohai'
+	bnd.identity;id='io.openems.edge.aohai',\
+	bnd.identity;id='io.openems.edge.xindun'
 -runbundles: \
 	Java-WebSocket;version='[1.6.0,1.6.1)',\
 	bcpkix;version='[1.81.0,1.81.1)',\
@@ -468,4 +469,5 @@
 	io.openems.edge.aohai;version=snapshot,\
 	io.openems.edge.deye;version=snapshot,\
 	io.openems.edge.meter.chint;version=snapshot,\
-	io.openems.wrapper.okhttp;version=snapshot
+	io.openems.wrapper.okhttp;version=snapshot,\
+	io.openems.edge.xindun;version=snapshot
