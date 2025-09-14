@@ -14,5 +14,6 @@ Bundle-Version: 1.0.0.${tstamp}
 	io.openems.edge.timedata.api,\
 	io.openems.edge.battery.api,\
 	io.openems.edge.ess.api
+	
 -testpath: \
 	${testpath}
