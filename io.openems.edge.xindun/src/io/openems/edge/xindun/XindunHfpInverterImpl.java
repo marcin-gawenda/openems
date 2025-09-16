@@ -121,13 +121,13 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 						m(XindunHfpInverter.ChannelId.GRID_VOLTAGE, new UnsignedWordElement(0X0005), SCALE_FACTOR_3), // GRID_VOLTAGE: 231 V
 						m(XindunHfpInverter.ChannelId.LOAD_CURRENT, new UnsignedWordElement(0X0006), SCALE_FACTOR_2), // LOAD_CURRENT: 1370 mA
 						m(XindunHfpInverter.ChannelId.GRID_CURRENT, new UnsignedWordElement(0X0007), SCALE_FACTOR_2), // GRID_CURRENT: 1370 mA
-						m(XindunHfpInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(0X0008), SCALE_FACTOR_2), // BAT_VOLTAGE: 41300 mV
+						m(XindunHfpInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(0X0008), SCALE_FACTOR_2), // BAT_VOLTAGE: 53800 mV, 
 						m(XindunHfpInverter.ChannelId.BUS_CURRENT, new SignedWordElement(0X0009), SCALE_FACTOR_1), // INV_VOLTAGE_L1: 231100 mV
 						m(XindunHfpInverter.ChannelId.INV_TEMP, new UnsignedWordElement(0X000A), SCALE_FACTOR_1), // 
 						new DummyRegisterElement(0X000B,0X000E),
 						m(XindunHfpInverter.ChannelId.INV_LLC_TEMP, new UnsignedWordElement(0X000F), SCALE_FACTOR_1), // 
 						m(XindunHfpInverter.ChannelId.INV_IPM_TEMP, new UnsignedWordElement(0X0010), SCALE_FACTOR_1), // 
-						m(XindunHfpInverter.ChannelId.BAT_CURRENT, new SignedWordElement(0X0011), SCALE_FACTOR_2) //
+						m(XindunHfpInverter.ChannelId.BAT_CURRENT, new SignedWordElement(0X0011), SCALE_FACTOR_2) // BAT_CURRENT: 3100 mA
 //						
 //						m(XindunHfpInverter.ChannelId.ISO_RESISTANCE, new UnsignedWordElement(21)),
 //						m(XindunHfpInverter.ChannelId.GFCI, new UnsignedWordElement(22)),
@@ -159,8 +159,17 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 					)
 				);
 		
-//		modbusProtocol.addTask(new FC3ReadRegistersTask(125, Priority.HIGH,
-//				m(XindunHfpInverter.ChannelId.INV_PRIORITY, new UnsignedWordElement(125)), // 
+		modbusProtocol.addTask(new FC3ReadRegistersTask(0X0032, Priority.HIGH,
+//				m(XindunHfpInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(0X0030), SCALE_FACTOR_1), // BAT_VOLTAGE: 0 mV
+//				m(XindunHfpInverter.ChannelId.BAT_CURRENT, new SignedWordElement(0X0031), SCALE_FACTOR_1), // BAT_CURRENT: 0 mA
+				m(XindunHfpInverter.ChannelId.BAT_TEMP, new UnsignedWordElement(0X0032), SCALE_FACTOR_1), // BAT_TEMP: 0 dC
+				m(XindunHfpInverter.ChannelId.BAT_SOC, new UnsignedWordElement(0X0033)), // BAT_SOC: 82 %
+				new DummyRegisterElement(0X0034,0X003D),
+				m(XindunHfpInverter.ChannelId.BAT_CHARGE_POWER, new UnsignedWordElement(0X003E)), // BAT_CHARGE_POWER: 209 W
+				new DummyRegisterElement(0X003F,0X0041),
+				m(XindunHfpInverter.ChannelId.GRID_POWER, new UnsignedWordElement(0X0042)), // GRID_POWER: 1127 W
+				m(XindunHfpInverter.ChannelId.E_GRID_BUY_TOTAL, new UnsignedWordElement(0X0043)) // E_GRID_BUY_TOTAL: 1 kWh
+				
 //				m(XindunHfpInverter.ChannelId.BAT_TYPE, new UnsignedWordElement(126)), // offset 1000, BAT_TYPE: 160 dC 
 //				m(XindunHfpInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(127), SCALE_FACTOR_2), // BAT_VOLTAGE: 421100 mV
 //				m(XindunHfpInverter.ChannelId.BAT_SOC, new UnsignedWordElement(128)), // BAT_SOC: 63 %
@@ -172,8 +181,8 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 //				new DummyRegisterElement(143,150),
 //				m(XindunHfpInverter.ChannelId.BAT_CYCLE_CNT, new UnsignedWordElement(151)), // BAT_SOC: 63 %
 //				m(XindunHfpInverter.ChannelId.BAT_SOH, new UnsignedWordElement(152)) // BAT_SOC: 63 %				
-//			)
-//		);	
+			)
+		);	
 
 		// 314 always 0
 		// 318 always 0
@@ -243,7 +252,16 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 //			)
 //		);
 		
-		var rUInt = 0X001B;
+		// 0X0088: 1280 = 0x0500 5% SOC shutdown; 0: lead-acid bat?
+		// 0X0089: 25615 = 0x640F: High byte = 100 (0x64) charging cut-off SOC; Low byte = 15 (0x0F) low voltage recovery SOC
+		// 0X0066: 48 = 0x0030: High byte = 0 Input mains: 0: 165-280V; Low byte = 48 Battery nominal value
+		// 0X0034: 0 Remaining capacity of lithium battery Ah
+		// 0X0035: 0 Rated capacity of lithium battery
+		// 0X003E
+		// 0X003F: 0 Battery charge level
+		// 0X0040: 5 kWh Battery discharge capacity
+		
+		var rUInt = 0X0036;
 		modbusProtocol.addTask(new FC3ReadRegistersTask(rUInt, Priority.HIGH,
 //		modbusProtocol.addTask(new FC3ReadRegistersTask(rUInt, Priority.HIGH,
 				m(XindunHfpInverter.ChannelId.TEST_U_INT, new UnsignedWordElement(rUInt)) //
@@ -285,8 +303,14 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 				+ ", INV_TEMP: " + this.channel(XindunHfpInverter.ChannelId.INV_TEMP).value().asString()
 				+ ", INV_IPM_TEMP: " + this.channel(XindunHfpInverter.ChannelId.INV_IPM_TEMP).value().asString()
 				+ ", INV_LLC_TEMP: " + this.channel(XindunHfpInverter.ChannelId.INV_LLC_TEMP).value().asString()
+				+ ", BAT_SOC: " + this.channel(XindunHfpInverter.ChannelId.BAT_SOC).value().asString()
+				+ ", BAT_VOLTAGE: " + this.channel(XindunHfpInverter.ChannelId.BAT_VOLTAGE).value().asString()	
 				+ ", BAT_CURRENT: " + this.channel(XindunHfpInverter.ChannelId.BAT_CURRENT).value().asString()
-
+				+ ", BAT_TEMP: " + this.channel(XindunHfpInverter.ChannelId.BAT_TEMP).value().asString()
+				+ ", BAT_CHARGE_POWER: " + this.channel(XindunHfpInverter.ChannelId.BAT_CHARGE_POWER).value().asString()
+				+ ", GRID_POWER: " + this.channel(XindunHfpInverter.ChannelId.GRID_POWER).value().asString()
+				+ ", E_GRID_BUY_TOTAL: " + this.channel(XindunHfpInverter.ChannelId.E_GRID_BUY_TOTAL).value().asString()
+				
 //				+ ", ERROR_CODE: " + this.channel(XindunHfpInverter.ChannelId.ERROR_CODE).value().asString()
 //				+ ", WARN_CODE: " + this.channel(XindunHfpInverter.ChannelId.WARN_CODE).value().asString()
 //				+ ", INV_VOLTAGE_L1: " + this.channel(XindunHfpInverter.ChannelId.INV_VOLTAGE_L1).value().asString()
@@ -329,11 +353,10 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 //				+ ", INV_PRIORITY: " + this.channel(XindunHfpInverter.ChannelId.INV_PRIORITY).value().asString()
 //				+ ", BMS_STATUS: " + this.channel(XindunHfpInverter.ChannelId.BMS_STATUS).value().asString()
 //				+ ", BAT_TYPE: " + this.channel(XindunHfpInverter.ChannelId.BAT_TYPE).value().asString()
-//				+ ", BAT_SOC: " + this.channel(XindunHfpInverter.ChannelId.BAT_SOC).value().asString()
-//				+ ", BAT_VOLTAGE: " + this.channel(XindunHfpInverter.ChannelId.BAT_VOLTAGE).value().asString()				
+			
 //				+ ", BAT_VOLTAGE_DSP: " + this.channel(XindunHfpInverter.ChannelId.BAT_VOLTAGE_DSP).value().asString()
 //				
-//				+ ", BAT_TEMP: " + this.channel(XindunHfpInverter.ChannelId.BAT_TEMP).value().asString()
+//				
 //				+ ", BAT_SOH: " + this.channel(XindunHfpInverter.ChannelId.BAT_SOH).value().asString()
 //				+ ", BAT_CYCLE_CNT: " + this.channel(XindunHfpInverter.ChannelId.BAT_CYCLE_CNT).value().asString()
 //				+ ", POWER_PV: " + this.channel(XindunHfpInverter.ChannelId.POWER_PV).value().asString()
@@ -341,10 +364,7 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 //				+ ", POWER_PV2: " + this.channel(XindunHfpInverter.ChannelId.POWER_PV2).value().asString()
 //				+ ", POWER_PV3: " + this.channel(XindunHfpInverter.ChannelId.POWER_PV3).value().asString()
 //				+ ", POWER_PV4: " + this.channel(XindunHfpInverter.ChannelId.POWER_PV4).value().asString()
-//				+ ", GRID_POWER: " + this.channel(XindunHfpInverter.ChannelId.GRID_POWER).value().asString()
-//				+ ", GRID_POWER_L1: " + this.channel(XindunHfpInverter.ChannelId.GRID_POWER_L1).value().asString()
-//				+ ", GRID_POWER_L2: " + this.channel(XindunHfpInverter.ChannelId.GRID_POWER_L2).value().asString()
-//				+ ", GRID_POWER_L3: " + this.channel(XindunHfpInverter.ChannelId.GRID_POWER_L3).value().asString()
+//				
 //				+ ", EPS_POWER_L1: " + this.channel(XindunHfpInverter.ChannelId.EPS_POWER_L1).value().asString()
 //				+ ", EPS_POWER_L2: " + this.channel(XindunHfpInverter.ChannelId.EPS_POWER_L2).value().asString()
 //				+ ", EPS_POWER_L3: " + this.channel(XindunHfpInverter.ChannelId.EPS_POWER_L3).value().asString()
@@ -376,7 +396,7 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 //				+ ", BAT_DISCHARGE_TODAY: " + this.channel(XindunHfpInverter.ChannelId.BAT_DISCHARGE_TODAY).value().asString()
 //				+ ", BAT_DISCHARGE_TOTAL: " + this.channel(XindunHfpInverter.ChannelId.BAT_DISCHARGE_TOTAL).value().asString()
 //				+ ", E_GRID_SELL_TOTAL: " + this.channel(XindunHfpInverter.ChannelId.E_GRID_SELL_TOTAL).value().asString()
-//				+ ", E_GRID_BUY_TOTAL: " + this.channel(XindunHfpInverter.ChannelId.E_GRID_BUY_TOTAL).value().asString()
+				
 				
 //				+ ", TEST_DOUBLE: " + this.channel(XindunHfpInverter.ChannelId.TEST_DOUBLE).value().asString()
 //				+ ", TEST_LONG: " + this.channel(XindunHfpInverter.ChannelId.TEST_LONG).value().asString()

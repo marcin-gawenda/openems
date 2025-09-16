@@ -257,6 +257,17 @@ public interface XindunHfpInverter extends ElectricityMeter, ModbusComponent, Op
 				.unit(Unit.MILLIAMPERE) //
 				.persistencePriority(PersistencePriority.HIGH)), //		
 		
+		
+		
+		
+		/* current value */
+		BAT_CHARGE_POWER(Doc.of(OpenemsType.INTEGER) //
+				.unit(Unit.WATT) //
+				.persistencePriority(PersistencePriority.HIGH)), //
+
+		
+		
+		// review BAT
 		/*
 		 * 0: Lead-acid batteries
 		 * 1: Lithium batteries
@@ -319,10 +330,6 @@ public interface XindunHfpInverter extends ElectricityMeter, ModbusComponent, Op
 				.unit(Unit.MILLIAMPERE) //
 				.persistencePriority(PersistencePriority.HIGH)), //
 		
-		/* current value */
-		BAT_CHARGE_POWER(Doc.of(OpenemsType.LONG) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //
 
 		/* current value */
 		BAT_AC_CHARGE_POWER(Doc.of(OpenemsType.LONG) //
@@ -398,9 +405,9 @@ public interface XindunHfpInverter extends ElectricityMeter, ModbusComponent, Op
 				.persistencePriority(PersistencePriority.HIGH)),		
 
 		// total energy imported from Grid
-		E_GRID_BUY_TOTAL(Doc.of(OpenemsType.LONG) //
+		E_GRID_BUY_TOTAL(Doc.of(OpenemsType.INTEGER) //
 				.accessMode(AccessMode.READ_ONLY)
-				.unit(Unit.WATT_HOURS) //
+				.unit(Unit.KILOWATT_HOURS) //
 				.persistencePriority(PersistencePriority.HIGH)),
 		
 		POWER_PV(Doc.of(OpenemsType.LONG) //
@@ -428,21 +435,11 @@ public interface XindunHfpInverter extends ElectricityMeter, ModbusComponent, Op
 				.unit(Unit.WATT) //
 				.persistencePriority(PersistencePriority.HIGH)),
 
-		GRID_POWER(Doc.of(OpenemsType.LONG) //
+		GRID_POWER(Doc.of(OpenemsType.INTEGER) //
 				.unit(Unit.WATT) //
 				.persistencePriority(PersistencePriority.HIGH)), //		
 
-		GRID_POWER_L1(Doc.of(OpenemsType.LONG) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //		
-		
-		GRID_POWER_L2(Doc.of(OpenemsType.LONG) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //	
-		
-		GRID_POWER_L3(Doc.of(OpenemsType.LONG) //
-				.unit(Unit.WATT) //
-				.persistencePriority(PersistencePriority.HIGH)), //			
+	
 
 		// TODO SUM
 		EPS_POWER(Doc.of(OpenemsType.LONG) //
