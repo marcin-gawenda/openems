@@ -257,6 +257,7 @@ public class XindunHfpInverterImpl extends AbstractOpenemsModbusComponent implem
 		// 0X0066: 48 = 0x0030: High byte = 0 Input mains: 0: 165-280V; Low byte = 48 Battery nominal value
 		// 0X0034: 0 Remaining capacity of lithium battery Ah
 		// 0X0035: 0 Rated capacity of lithium battery
+		// 0X0036: 0 Lithium battery status flag UINT1
 		// 0X003E
 		// 0X003F: 0 Battery charge level
 		// 0X0040: 5 kWh Battery discharge capacity

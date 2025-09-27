@@ -144,14 +144,17 @@ public class DeyeHybridInverterImpl extends AbstractOpenemsModbusComponent imple
 				m(DeyeHybridInverter.ChannelId.DC_TRANS_TEMP, new SignedWordElement(540), SUBTRACT(1000)), // DC_TRANS_TEMP: 250 dC
 				m(DeyeHybridInverter.ChannelId.HEAT_SINK_TEMP, new SignedWordElement(541), SUBTRACT(1000)), // HEAT_SINK_TEMP: 270 dC
 				new DummyRegisterElement(542, 585),
-				m(DeyeHybridInverter.ChannelId.BAT_TEMP, new SignedWordElement(586), SUBTRACT(1000)), // offset 1000, BAT_TEMP: 160 dC 
-				m(DeyeHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_2), // BAT_VOLTAGE: 421000 mV
+				m(DeyeHybridInverter.ChannelId.BAT_TEMP, new SignedWordElement(586), SUBTRACT(1000)), // offset 1000, BAT_TEMP: 160 dC
+				m(DeyeHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_1), // LV: BAT_VOLTAGE: 421000 mV
+//				m(DeyeHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_2), // HV: BAT_VOLTAGE: 421000 mV
 				m(DeyeHybridInverter.ChannelId.BAT_SOC, new SignedWordElement(588)), // BAT_SOC: 63 %
 				new DummyRegisterElement(589),
-				m(DeyeHybridInverter.ChannelId.BAT_POWER, new SignedWordElement(590), SCALE_FACTOR_1), // BAT_POWER: 1200 W
+				m(DeyeHybridInverter.ChannelId.BAT_POWER, new SignedWordElement(590)), // LV: BAT_POWER: 1200 W
+//				m(DeyeHybridInverter.ChannelId.BAT_POWER, new SignedWordElement(590), SCALE_FACTOR_1), // HV: BAT_POWER: 1200 W
 				m(DeyeHybridInverter.ChannelId.BAT_CURRENT, new SignedWordElement(591), SCALE_FACTOR_1), // BAT_CURRENT: 2860 mA				
-//				m(DeyeHybridInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)) // BAT_CAPACITY: 200 Ah (420 V * 200 Ah = 84 kWh, >> 20 kWh ?)
-				new DummyRegisterElement(592,597),
+				m(DeyeHybridInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)), // LV: BAT_CAPACITY: 200 Ah (420 V * 200 Ah = 84 kWh, >> 20 kWh ?)
+//				m(DeyeHybridInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)) // HV: BAT_CAPACITY: 200 Ah (420 V * 200 Ah = 84 kWh, >> 20 kWh ?)
+				new DummyRegisterElement(593,597),
 				m(DeyeHybridInverter.ChannelId.GRID_VOLTAGE_L1, new UnsignedWordElement(598), SCALE_FACTOR_2), // GRID_VOLTAGE_L1: 233900 mV
 				m(DeyeHybridInverter.ChannelId.GRID_VOLTAGE_L2, new UnsignedWordElement(599), SCALE_FACTOR_2), // GRID_VOLTAGE_L2: 236100 mV
 				m(DeyeHybridInverter.ChannelId.GRID_VOLTAGE_L3, new UnsignedWordElement(600), SCALE_FACTOR_2), // GRID_VOLTAGE_L3: 232400 mV
@@ -250,8 +253,8 @@ public class DeyeHybridInverterImpl extends AbstractOpenemsModbusComponent imple
 				+ ", INV_STATUS: " + this.channel(DeyeHybridInverter.ChannelId.INV_STATUS).value().asString()
 //				+ ", ACTIVE_ENERGY_GEN_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.ACTIVE_ENERGY_GEN_TODAY).value().asString()
 //				+ ", REACTIVE_ENERGY_GEN_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.REACTIVE_ENERGY_GEN_TODAY).value().asString()
-//				+ ", BAT_CHARGE_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.BAT_CHARGE_TODAY).value().asString()
-//				+ ", BAT_DISCHARGE_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.BAT_DISCHARGE_TODAY).value().asString()
+				+ ", BAT_CHARGE_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.BAT_CHARGE_TODAY).value().asString()
+				+ ", BAT_DISCHARGE_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.BAT_DISCHARGE_TODAY).value().asString()
 //				+ ", E_GRID_SELL_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.E_GRID_SELL_TODAY).value().asString()
 //				+ ", E_GRID_BUY_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.E_GRID_BUY_TODAY).value().asString()
 //				+ ", E_LOAD_TODAY: " + this.channel(DeyeHybridInverter.ChannelId.E_LOAD_TODAY).value().asString()
