@@ -73,5 +73,11 @@ public class MyConfig extends AbstractComponentConfig implements Config {
 		return null;
 	}
 
+	@Override
+	public boolean isLowVoltageBattery() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 
 }

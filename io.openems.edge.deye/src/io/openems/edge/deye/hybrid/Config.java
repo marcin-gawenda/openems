@@ -20,7 +20,7 @@ import io.openems.common.types.MeterType;
 	boolean enabled() default true;
 
 	@AttributeDefinition(name = "Meter-Type", description = "What is measured by this Meter?")
-	MeterType type() default MeterType.GRID;
+	MeterType type() default MeterType.PRODUCTION_AND_CONSUMPTION;
 
 	@AttributeDefinition(name = "Modbus-ID", description = "ID of Modbus bridge.")
 	String modbus_id() default "modbus0";
@@ -32,4 +32,7 @@ import io.openems.common.types.MeterType;
 	String Modbus_target() default "(enabled=true)";
 
 	String webconsole_configurationFactory_nameHint() default "Deye Hybrid inverter [{id}]";
+	
+	@AttributeDefinition(name = "Is Low Voltage battery?", description = "Low Voltage: true, High Voltage: false")
+	boolean isLowVoltageBattery() default true;
 }

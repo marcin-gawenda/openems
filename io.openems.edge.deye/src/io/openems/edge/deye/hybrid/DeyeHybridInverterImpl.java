@@ -80,7 +80,8 @@ public class DeyeHybridInverterImpl extends AbstractOpenemsModbusComponent imple
 		super.setModbus(modbus);
 	}
 
-	private MeterType meterType = MeterType.GRID;
+	private MeterType meterType = MeterType.PRODUCTION_AND_CONSUMPTION;
+	private boolean isLowVoltageBattery = true;
 
 	public DeyeHybridInverterImpl() {
 		super(//
@@ -95,6 +96,7 @@ public class DeyeHybridInverterImpl extends AbstractOpenemsModbusComponent imple
 	@Activate
 	private void activate(ComponentContext context, Config config) throws OpenemsException {
 		this.meterType = config.type();
+		this.isLowVoltageBattery = config.isLowVoltageBattery();
 		
 		if(super.activate(context, config.id(), config.alias(), config.enabled(), config.modbusUnitId(), this.cm, "Modbus",
 				config.modbus_id())) {
@@ -145,15 +147,19 @@ public class DeyeHybridInverterImpl extends AbstractOpenemsModbusComponent imple
 				m(DeyeHybridInverter.ChannelId.HEAT_SINK_TEMP, new SignedWordElement(541), SUBTRACT(1000)), // HEAT_SINK_TEMP: 270 dC
 				new DummyRegisterElement(542, 585),
 				m(DeyeHybridInverter.ChannelId.BAT_TEMP, new SignedWordElement(586), SUBTRACT(1000)), // offset 1000, BAT_TEMP: 160 dC
-				m(DeyeHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_1), // LV: BAT_VOLTAGE: 421000 mV
-//				m(DeyeHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_2), // HV: BAT_VOLTAGE: 421000 mV
+				isLowVoltageBattery ?
+					m(DeyeHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_1) // LV: BAT_VOLTAGE: 421000 mV
+				:	
+					m(DeyeHybridInverter.ChannelId.BAT_VOLTAGE, new UnsignedWordElement(587), SCALE_FACTOR_2), // HV: BAT_VOLTAGE: 421000 mV
 				m(DeyeHybridInverter.ChannelId.BAT_SOC, new SignedWordElement(588)), // BAT_SOC: 63 %
 				new DummyRegisterElement(589),
-				m(DeyeHybridInverter.ChannelId.BAT_POWER, new SignedWordElement(590)), // LV: BAT_POWER: 1200 W
-//				m(DeyeHybridInverter.ChannelId.BAT_POWER, new SignedWordElement(590), SCALE_FACTOR_1), // HV: BAT_POWER: 1200 W
+				isLowVoltageBattery ? 
+					m(DeyeHybridInverter.ChannelId.BAT_POWER, new SignedWordElement(590)) // LV: BAT_POWER: 1200 W
+				:
+					m(DeyeHybridInverter.ChannelId.BAT_POWER, new SignedWordElement(590), SCALE_FACTOR_1), // HV: BAT_POWER: 1200 W
 				m(DeyeHybridInverter.ChannelId.BAT_CURRENT, new SignedWordElement(591), SCALE_FACTOR_1), // BAT_CURRENT: 2860 mA				
-				m(DeyeHybridInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)), // LV: BAT_CAPACITY: 200 Ah (420 V * 200 Ah = 84 kWh, >> 20 kWh ?)
-//				m(DeyeHybridInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)) // HV: BAT_CAPACITY: 200 Ah (420 V * 200 Ah = 84 kWh, >> 20 kWh ?)
+				m(DeyeHybridInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)), // LV: BAT_CAPACITY: 200 Ah (51 V * 200 Ah = 10.2 kWh, >> 10 kWh ?)					
+//				m(DeyeHybridInverter.ChannelId.BAT_CAPACITY, new UnsignedWordElement(592)), // HV: BAT_CAPACITY: 50 Ah (420 V * 50 Ah = 21 kWh, >> 21 kWh ?)
 				new DummyRegisterElement(593,597),
 				m(DeyeHybridInverter.ChannelId.GRID_VOLTAGE_L1, new UnsignedWordElement(598), SCALE_FACTOR_2), // GRID_VOLTAGE_L1: 233900 mV
 				m(DeyeHybridInverter.ChannelId.GRID_VOLTAGE_L2, new UnsignedWordElement(599), SCALE_FACTOR_2), // GRID_VOLTAGE_L2: 236100 mV
@@ -198,11 +204,23 @@ public class DeyeHybridInverterImpl extends AbstractOpenemsModbusComponent imple
 				m(DeyeHybridInverter.ChannelId.LOAD_POWER, new SignedWordElement(653)),
 				m(DeyeHybridInverter.ChannelId.LOAD_APPARENT_POWER, new SignedWordElement(654)),
 				new DummyRegisterElement(655, 670),
-				m(DeyeHybridInverter.ChannelId.POWER_PV, new UnsignedWordElement(671)), // TODO: calculate the sum
-				m(DeyeHybridInverter.ChannelId.POWER_PV1, new UnsignedWordElement(672)), // POWER_PV1: 60 W
-				m(DeyeHybridInverter.ChannelId.POWER_PV2, new UnsignedWordElement(673)), // POWER_PV2: 0 W
-				m(DeyeHybridInverter.ChannelId.POWER_PV3, new UnsignedWordElement(674)), // POWER_PV3: 0 W
-				m(DeyeHybridInverter.ChannelId.POWER_PV4, new UnsignedWordElement(675)), // POWER_PV4: 0 W 
+				m(DeyeHybridInverter.ChannelId.POWER_PV, new UnsignedWordElement(671)), // see calculatePowerPv()
+				isLowVoltageBattery ?
+					m(DeyeHybridInverter.ChannelId.POWER_PV1, new UnsignedWordElement(672)) // LV: POWER_PV1: 60 W
+				:
+					m(DeyeHybridInverter.ChannelId.POWER_PV1, new UnsignedWordElement(672), SCALE_FACTOR_1),
+				isLowVoltageBattery ?
+					m(DeyeHybridInverter.ChannelId.POWER_PV2, new UnsignedWordElement(673)) // LV: POWER_PV2: 0 W
+				:
+					m(DeyeHybridInverter.ChannelId.POWER_PV2, new UnsignedWordElement(673), SCALE_FACTOR_1),
+				isLowVoltageBattery ?
+					m(DeyeHybridInverter.ChannelId.POWER_PV3, new UnsignedWordElement(674)) // LV: POWER_PV3: 0 W
+				:
+					m(DeyeHybridInverter.ChannelId.POWER_PV3, new UnsignedWordElement(674), SCALE_FACTOR_1),
+				isLowVoltageBattery ?
+					m(DeyeHybridInverter.ChannelId.POWER_PV4, new UnsignedWordElement(675)) // LV: POWER_PV4: 0 W 
+				:
+					m(DeyeHybridInverter.ChannelId.POWER_PV4, new UnsignedWordElement(675), SCALE_FACTOR_1),
 				m(DeyeHybridInverter.ChannelId.VOLTAGE_PV1, new UnsignedWordElement(676), SCALE_FACTOR_2), // VOLTAGE_PV1: 574100 mV
 				m(DeyeHybridInverter.ChannelId.CURRENT_PV1, new UnsignedWordElement(677), SCALE_FACTOR_2), // CURRENT_PV1: 1000 mA
 				m(DeyeHybridInverter.ChannelId.VOLTAGE_PV2, new UnsignedWordElement(678), SCALE_FACTOR_2), //

@@ -78,7 +78,7 @@ public class AohaiHybridInverterImpl extends AbstractOpenemsModbusComponent impl
 		super.setModbus(modbus);
 	}
 
-	private MeterType meterType = MeterType.GRID;
+	private MeterType meterType = MeterType.PRODUCTION_AND_CONSUMPTION;
 
 	public AohaiHybridInverterImpl() {
 		super(//

@@ -20,7 +20,7 @@ import io.openems.common.types.MeterType;
 	boolean enabled() default true;
 
 	@AttributeDefinition(name = "Meter-Type", description = "What is measured by this Meter?")
-	MeterType type() default MeterType.GRID;
+	MeterType type() default MeterType.PRODUCTION_AND_CONSUMPTION;
 
 	@AttributeDefinition(name = "Modbus-ID", description = "ID of Modbus bridge.")
 	String modbus_id() default "modbus0";
